@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<solution>
+  <name>Entropy</name>
+  <properties>
+    <property name="emuLoad.projectName">Bootloader</property>
+    <property name="emuLoadMode">project</property>
+  </properties>
+  <projects>
+    <project path="Kernel\Kernel.10cproj" />
+    <project path="Bootloader\Bootloader.10cproj" />
+    <project path="OS_disk\OS_disk.10cproj" />
+  </projects>
+</solution>
