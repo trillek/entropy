@@ -1,0 +1,34 @@
+Standard Commenting & Documentation Proposal:
+---------------------------------------------
+
+; @name <name of the function>
+; <generic description>
+; @params <register | stack | memloc>
+; @destroys <register | stack | memloc>
+; @returns <register | stack | memloc>
+; @see <name of other file or link to further reference>
+:<function>
+
+Example:
+
+; @name add
+; This function adds the contents
+; of register A to register B.
+; @params A first value
+; @params B second value
+; @returns A sum
+; @see mathlib.0x10c
+:add
+
+The parameters are the registers A and B, hence:
+@params A
+@params B
+
+We have made our function in such a way that the contents of A and B are preserved (they are pushed and popped 
+at the beginning and end of the function respectively). Hence, we do not need to specify the @destroys annotation.
+
+Our value (the sum) is stored in A hence, @returns A.
+
+Please also use the square brackets [ ] to denote if some parameter is a pointer or the actual value being used.
+
+In short, @params A != @params [A] 
