@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <project version="1.7.5" type="code">
   <name>Kernel</name>
   <properties>
@@ -12,8 +12,9 @@
   <references />
   <files>
     <file path="main.10c" />
-    <file path="..\..\ChaOS\chaos_theory\Kernel\Main\lib_STDIO.10c" />
-    <file path="..\..\ChaOS\chaos_theory\Kernel\Main\MathLib.10c" />
+    <file path="lib_STDIO.10c" />
+    <file path="MathLib.10c" />
     <file path="lib_clock.10c" />
+    <file path="mem_manager.10c" />
   </files>
 </project>
