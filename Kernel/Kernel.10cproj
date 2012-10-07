@@ -12,5 +12,7 @@
   <references />
   <files>
     <file path="main.10c" />
+    <file path="..\..\ChaOS\chaos_theory\Kernel\Main\lib_STDIO.10c" />
+    <file path="..\..\ChaOS\chaos_theory\Kernel\Main\MathLib.10c" />
   </files>
 </project>
