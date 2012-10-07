@@ -1,7 +1,7 @@
 ; --------------------------------------------
-; Title:   main
-; Date of creation:    2012-10-05
+; Title:   lib_clock
+; Author:  Dilbertfan
+; Date:    10/7/2012
 ; Version: 0x1
 ; --------------------------------------------
-;initialize hardware drivers
-JSR lib_STDIO_init
+:lib_clock_init
