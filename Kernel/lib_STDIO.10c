@@ -10,23 +10,19 @@
 ;The Goal of the STDIO library is as follows:
 ;
 ;Enable extremely flexible and fast Input and Output system
-;
 ;Allow programs easy access to screen, keyboard, and FS access
-;
 ;Implement security against bad programs
-;
 ;Make the Implemtation completely independant of programs, for easy modification
 
+
+;@name lib_STDIO_init
+;Performs hardware detection of LEM1802 and Generic Keyboard,
+;saves HW id, and turns on LEM1802
+;@destroys A,B,C,J,X,Y
 :lib_STDIO_init
-    ; INPUT: NONE
-    ; OUTPUT: NONE
-    ; DESC: Sets neccecary variables to function
-    ; NOTE: EITHER CALL THIS OR SET THE DAT VARS YOURSELF!
-    SET PUSH, J
-    SET PUSH, I
-    SET J, 0
-    HWN I
+    HWN J
     :lib_STDIO_initLoop
+        ;loop to find LEM1802 and Generic Keyboard
         HWQ J
         IFE B, 0x30CF
             IFE A, 0x7406 
@@ -34,28 +30,36 @@
         IFE B, 0x7349
             IFE A, 0xF615 
                 JSR lib_STDIO_initScreen
-        ADD J, 1
-        IFG J, I
-            SET PC, lib_STDIO_initLoopEnd
-        SET PC, lib_STDIO_initLoop
+        SUB J, 1
+        IFA J, -1
+            SET PC, lib_STDIO_initLoop
+        SET PC, lib_STDIO_initLoopEnd
     :lib_STDIO_initScreen
+    ;Save HW id of monitor, then turn on with buffer at 0x8000
     SET [lib_STDIO_monitorID], J
     SET A, 0
     SET B, 0x8000
     HWI J
     SET PC, POP
     :lib_STDIO_initKeyboard
+    ;Save HW id of keyboard
     SET [lib_STDIO_KeyboardID], J
     SET PC, POP
     :lib_STDIO_initLoopEnd
-    SET I, POP
-    SET J, POP
+    ;Set bounds for monitor buffer
     SET [lib_STDIO_MonitorPos], 0x8000
     SET [lib_STDIO_MonitorStart], [lib_STDIO_MonitorPos]
     SET [lib_STDIO_MonitorEnd], [lib_STDIO_MonitorPos]
     ADD [lib_STDIO_MonitorEnd], 386
     SET PC, POP
 
+;@name lib_STDIO_getChar
+;I think this one needs a rewrite, or atleast some good 
+;comments from someone that understands it
+;@params A 
+;@params B 
+;@returns A 
+;@destroys C
 :lib_STDIO_getChar
     ; INPUT: B, A
     ; OUTPUT: A
@@ -99,11 +103,12 @@
     SET Z, POP
     SET PC, POP
         
-    
+;@name lib_STDIO_print
+;Prints a number of characters, in the chosen color, from a memory location
+;@params [A] Pointer to memory location of first character to print
+;@params B Number of characters to print
+;@params C Color to print in (Foreground<<12)+(Background<<8)
 :lib_STDIO_print
-    ; INPUT: B, A, C
-    ; OUTPUT: NONE
-    ; DESC: print B characters starting at location A, with color C
     SET PUSH, I
     ADD B, A
     :lib_STDIO_printLoop
@@ -127,13 +132,15 @@
         :lib_STDIO_printLoopCont
         IFE [lib_STDIO_MonitorPos], [lib_STDIO_MonitorEnd]
             JSR lib_STDIO_scroll
-        ADD A,1
+        ADD A, 1
         IFN A, B
             SET PC, lib_STDIO_printLoop
     :lib_STDIO_printEnd
     SET I, POP
     SET PC, POP
-    
+
+;@name lib_STDIO_scroll
+;Scroll the text on the screen up 1 line?
 :lib_STDIO_scroll
     ; INPUT: NONE
     ; OUTPUT: NONE
@@ -141,8 +148,7 @@
     SET PUSH, X
     SET PUSH, Y
     SET PUSH, A
-    SET X, [lib_STDIO_MonitorEnd]
-    SUB X, 386
+    SET X, [lib_STDIO_MonitorStart]
     SET Y, 0x20
     ADD Y, X
     :lib_STDIO_scrollLoopOne
@@ -166,10 +172,9 @@
         SET X, POP
         SET PC, POP
 
+;@name lib_STDIO_enter
+;Moves the position of the next character to the next line
 :lib_STDIO_enter
-    ; INPUT: NONE
-    ; OUTPUT: NONE
-    ; DESC: Helper function, moves to the next line
     SET PUSH, J
     SET PUSH, A
     SET A, [lib_STDIO_MonitorPos]
