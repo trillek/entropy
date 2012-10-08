@@ -16,5 +16,6 @@
     <file path="MathLib.10c" />
     <file path="lib_clock.10c" />
     <file path="mem_manager.10c" />
+    <file path="filesystem.10c" />
   </files>
 </project>
