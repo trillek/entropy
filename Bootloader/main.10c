@@ -5,31 +5,33 @@
 ; Version: 0x1
 ; --------------------------------------------
 
-;find HMD2043
-set I, 0xFFFF
- add I, 0x1
- hwq I
- ife A, 0x4CAE
-  ife B, 0x74FA
-   ife C, 0x07C2
-   	ife X, 0x4948
-   	 ife Y, 0x2154
-   	  add pc, 0x1
-sub pc, 0xE
+;find M35FD
+SET I, 0xFFFF
+ ADD I, 0x1
+ HWQ I
+ IFE X, 0x1eb3
+  IFE Y, 0x7e91
+   IFE A, 0x7349
+    IFE B, 0xf615
+     IFE C, 0x000b
+      ADD PC, 0x1
+SUB PC, 0xE
 
 ;wait for floppy present
-set A, 0x0
-hwi I
-ife B, 0x0
-	sub pc, 0x3
+SET A, 0x0
+HWI I
+IFE B, 0x0
+  SUB PC, 0x3
 
-;load first 0x10 sectors from the floppy
-set A, 0x3
-set B, 0x0
-hwi I
-set A, 0x10
-set B, 0x0
-set C, 0x10
-set X, 0x0
-set [0xFFFF], 0x1A40
-set pc, 0xFFFF
+;load first 0x3 sectors from the floppy (new spec can only read one sector at a time)
+SET A, 0x2
+SET X, 0x3
+SET Y, 0x3
+HWI I
+SUB X, 0x1
+SUB Y, 0x1
+HWI I
+SUB X, 0x1
+SUB Y, 0x1
+SET [0xFFFF], 0x1A40
+SET PC, 0xFFFF
