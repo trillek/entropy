@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <project version="1.7.5" type="code">
   <name>Kernel</name>
   <properties>
@@ -11,10 +11,11 @@
   </properties>
   <references />
   <files>
-    <file path="main.10c" />
-    <file path="lib_STDIO.10c" />
-    <file path="lib_clock.10c" />
-    <file path="mem_manager.10c" />
-    <file path="filesystem.10c" />
+    <file path="main.dasm" />
+    <file path="lib_STDIO.dasm" />
+    <file path="lib_clock.dasm" />
+    <file path="mem_manager.dasm" />
+    <file path="filesystem.dasm" />
+    <file path="lib_float.dasm" />
   </files>
 </project>
