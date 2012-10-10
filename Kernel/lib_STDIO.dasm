@@ -54,8 +54,7 @@
     SET PC, POP
 
 ;@name lib_STDIO_getChar
-;I think this one needs a rewrite, or atleast some good 
-;comments from someone that understands it
+;Allocates a buffer size B at return A, with Input A designating blocking mode
 ;@params A 
 ;@params B 
 ;@returns A 
