@@ -1,7 +1,47 @@
 ; --------------------------------------------
 ; Title:   lib_clock
-; Author:  Dilbertfan
-; Date:    10/7/2012
+; Author:  Canino
+; Date:    10/10/2012
 ; Version: 0x1
 ; --------------------------------------------
-:lib_clock_init
+
+;Takes HW ID of clock in A
+Clock_SetID:
+  SET [Clock_ID], A
+  SET PC, POP
+
+;Takes requested resolution in A in 1/60 sec
+Clock_SetTicksec:
+  SET PUSH, B
+  SET B, A
+  SET A, CLOCK_SETTICK
+  HWI [Clock_ID]
+  SET A, B
+  SET B, POP
+  SET PC, POP
+	
+;Returns 1/60 sec elapsed since last call to Clock_SetTicks
+Clock_GetTicksec:
+  SET PUSH, C
+  SET A, CLOCK_GETTICK
+  HWI [Clock_ID]
+  SET A, C
+  SET C, POP
+  SET PC, POP
+
+;Sets Interrupt Message to A. If A=0, disable Interrupts
+Clock_SetIntMsg:
+  SET PUSH, B
+  SET B, A
+  SET A, CLOCK_TOGLINT
+  HWI [Clock_ID]
+  SET A, B
+  SET B, POP
+  SET PC, POP
+
+Clock_ID:
+  DAT 0xFFFF
+
+#define CLOCK_SETTICK		0
+#define CLOCK_GETTICK		1
+#define CLOCK_TOGLINT		2
