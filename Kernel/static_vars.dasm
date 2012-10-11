@@ -1,0 +1,122 @@
+;The purpose of this is a way to use names to refer to other wise numerical values
+;This way, you don't need to look up what an Interrupt is doing, or which key
+;is being pressed/output when looking at code. The assembler uses them (Devkit and Organic)
+;and are not part of the overall size of the kernel, just makes code more readable.
+;Feel free to suggest other names, these are just what I use.
+
+
+;Defines
+;-------
+
+;LEM-1802 Interrupts and dimensions
+#define LEM_INT_MAPSCRN     0
+#define LEM_INT_MAPFONT     1
+#define LEM_INT_MAPPALT     2
+#define LEM_INT_SETBRDR     3
+#define LEM_INT_DMPFONT     4
+#define LEM_INT_DMPPALT     5
+#define LEM_WIDTH           32
+#define LEM_HEIGHT          12
+
+;Generic Clock Interrupts
+#define CLOCK_INT_SETTICK       0
+#define CLOCK_INT_GETTICK       1
+#define CLOCK_INT_TOGLINT       2
+
+;Generic Keyboard Interrupts
+#define KEY_INT_CLRBUFF     0
+#define KEY_INT_NEXTKEY     1
+#define KEY_INT_KEYPRSS     2
+#define KEY_INT_TOGLINT     3
+
+;Display colors
+; IE CHAR_CAPA + (COLOR_FG*COLOR_CYAN) + (COLOR_BG*COLOR_LTGRAY)
+; is a Cyan "A" with a Light Gray Background
+#define BLINK				0x80
+#define COLOR_FG			0x1000
+#define COLOR_BG			0x100
+#define COLOR_BLACK			0x0
+#define COLOR_BLUE			0x1
+#define COLOR_GREEN			0x2
+#define COLOR_CYAN			0x3
+#define COLOR_RED			0x4
+#define COLOR_PURPLE		0x5
+#define COLOR_ORANGE		0x6
+#define COLOR_LTGRAY		0x7
+#define COLOR_DKGRAY		0x8
+#define COLOR_UNK			0x9
+#define COLOR_LTGREEN		0xA
+#define COLOR_LTBLUE		0xB
+#define COLOR_PINK			0xC
+#define COLOR_LTPURP		0xD
+#define COLOR_YELLOW		0xE
+#define COLOR_WHITE			0xF
+
+;Output Characters, also some work as input characters too
+#define CHAR_PLUMN			0x04
+#define CHAR_DIV			0x05
+#define CHAR_MINUS			0x06
+#define CHAR_HLINE			0x07
+#define CHAR_VLINE			0x08
+#define CHAR_CRNTL			0x09
+#define CHAR_CRNTR			0x0A
+#define CHAR_CRNBR			0x0B
+#define CHAR_CRNBL			0x0C
+#define CHAR_CRNML			0x0D
+#define CHAR_CRNTM			0x0E
+#define CHAR_CRNMR			0x0F
+#define CHAR_CRNBM			0x10
+#define CHAR_CRNMID			0x11
+#define CHAR_TOPBX			0x1B
+#define CHAR_BOTBX			0x1C
+#define CHAR_RBOX			0x1D
+#define CHAR_LBOX			0x1E
+#define CHAR_BLOCK			0x1F
+#define CHAR_SPACE			0x20
+#define CHAR_EXPT			0x21
+#define CHAR_DQUT			0x22
+#define CHAR_DOLLAR			0x24
+#define CHAR_PRCT			0x25
+#define CHAR_AMP			0x26
+#define CHAR_SQUT			0x27
+#define CHAR_OPAR			0x28
+#define CHAR_CPAR			0x29
+#define CHAR_MUL			0x2A
+#define CHAR_PLUS			0x2B
+#define CHAR_COMMA			0x2C
+#define CHAR_DASH			0x2D
+#define CHAR_PRD			0x2E
+#define CHAR_BSLSH			0x2F
+#define CHAR_0				0x30
+#define CHAR_COLON			0x3A
+#define CHAR_SCOLON			0x3B
+#define CHAR_LT				0x3C
+#define CHAR_EQU			0x3D
+#define CHAR_GT				0x3E
+#define CHAR_QUES			0x3F
+;#define CHAR_		        0x40		WHAT???
+#define CHAR_CAPA			0x41
+#define CHAR_OSQU			0x5B
+#define CHAR_FSLSH			0x5C
+#define CHAR_CSQU			0x5D
+#define CHAR_CARET			0x5E
+#define CHAR_USCR			0x5F
+#define CHAR_ACT			0x60
+#define CHAR_LOWA			0x61
+#define CHAR_OCURL			0x7B
+#define CHAR_PIPE			0x7C
+#define CHAR_CCURL			0x7D
+#define CHAR_TILDE			0x7E
+#define CHAR_DEG			0x7F
+
+;Non-printing input keys
+#define KEY_BKSP			0x10
+#define KEY_RTRN			0x11
+#define KEY_ISRT			0x12
+#define KEY_DELT			0x13
+#define KEY_ARWU			0x80
+#define KEY_ARWD			0x81
+#define KEY_ARWL			0x82
+#define KEY_ARWR			0x83
+#define KEY_SHFT			0x90
+#define KEY_CTRL			0x91
