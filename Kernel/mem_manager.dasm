@@ -1,6 +1,238 @@
 ; --------------------------------------------
 ; Title:   mem_manager
-; Author:  Dilbertfan
-; Date:    10/6/2012
-; Version: 
+; Author:  Lucus
+; Date:    7-10-2012
+; Version: 1.0
 ; --------------------------------------------
+
+;TODO:
+; - Test if it all works like it's supposed to...
+
+;MEMORY MANAGER
+
+;Implements paged memory, pages are always 512 words each.
+
+;FUNCTIONS:
+
+;fn_init_MM  		;Initiates the memory manager, always call this first.
+					;Arguments: None, Return: None.
+
+;fn_request_memory	;Requests several pages of memory in a row.
+					;Arguments: A=number of pages requested (0-127), Return: A=first allocated page (0-127) or -1 if out of space.
+
+;fn_clear_process	;Frees all sectors belonging to process A.
+					;Arguments: A=process to be cleared (0-63), Return: None.
+
+;fn_request_page	;Requests one page of memory for [current_process]
+					;Arguments: None, Return: A=allocated page (0-127) or -1 if out of space.
+
+;fn_free_page		;Frees page A if it belongs to [current_process].
+					;Arguments: A=page to be freed (0-127), Return: A=0 on success or 0x101 if no permission.
+
+;fn_clear_page		;Clears a page, setting all words within that page to 0.
+					;Arguments A=page to be cleared (0-127), Return: None.
+
+;Many of these functions use the variable [current_process]. This should be kept up to date by the process manager or changed for testing purposes.
+
+;Call functions this way:
+;set a, argument_0
+;jsr fn_function
+;set return_0, a
+
+;DEFINES:
+#define max_process_num		64 ;The maximum amount of processes this supports, also change corresponding value in data section.
+#define err_unknown			0x100 ;start at 0x100 to ensure no short words are used, that could result in problems with some code.
+#define err_no_permission	0x101
+
+;Right now, functions assume being called by JSR and enable interrupt queueing while in shared memory (pretty much all the time)
+;If functions are instead called by INT, comment out iaq commands.
+
+;Always call this before the first function call, as it reserves the pages in use by the kernel (or whatever is in memory on build)
+;It also reserves the last page for the stack. The pages in use by the kernel are simply added to [current_process].
+:fn_init_MM ;Arguments: None, Return: None
+set push, a
+set a, free_space_start
+shr a, 9 ;div a, 512
+add a, 1
+set [page_header_start + 127], -1 ;last page reserved for stack, system stack shouldn't use more than 512 words
+jsr fn_request_memory
+set a, pop
+set pc, pop
+
+;This looks for a series of A free pages and allocates them to the running process.
+;Use this only for assigning memory for a process on startup. Does not use process_header.
+:fn_request_memory ;Arguments: A=number_of_pages, Return: A=first_allocated_page (-1=no_space)
+set push, b
+set push, c
+iaq 1
+set b, page_header_start
+set c, 0
+:.loop_a
+ife [b], 0
+add c, 1
+ifn [b], 0
+set c, 0
+ife c, a
+set pc, .found_space
+ife b, page_header_start + 127
+set pc, .no_space
+add b, 1
+set pc, .loop_a
+:.found_space
+set c, b
+sub c, a
+add c, 1
+set [b], -1
+:.loop_b ;a=#pages, b=lastpage, c=firstpage
+ife b, c
+set pc, .do_header
+set [b - 1], b
+sub [b - 1], page_header_start
+sub b, 1
+set pc, .loop_b
+:.do_header
+set a, b
+sub a, page_header_start
+set b, [current_process]
+add b, process_first_pages_start
+:.loop_c
+ife [b], -1
+set pc, .found_end
+set b, [b]
+add b, page_header_start
+set pc, .loop_c
+:.found_end
+set [b], a
+add pc, 1 ;skip set a, -1
+:.no_space
+set a, -1
+iaq 0
+set c, pop
+set b, pop
+set pc, pop
+
+:fn_request_page ;Arguments: None, Return: A=allocated_page (-1=no_space)
+iaq 1
+set a, page_header_start
+:.loop_a
+ife [a], 0
+set pc, .found_space
+ife a, page_header_start + 127
+set pc, .no_space
+add a, 1
+set pc, .loop_a
+:.no_space
+set a, -1
+iaq 0
+set pc, pop
+:.found_space
+set push, b
+set [a], -1
+sub a, page_header_start
+set b, [current_process]
+add b, process_first_pages_start
+:.loop_b
+ife [b], -1
+set pc, .found_end
+set b, [b]
+add b, page_header_start
+set pc, .loop_b
+:.found_end
+set [b], a
+iaq 0
+set b, pop
+set pc, pop
+
+;This frees all pages belonging to process A
+:fn_clear_process ;Arguments: A=process, Return: A=0 on success, errno on failure
+set push, b
+iaq 1
+set a, [a + process_first_pages_start]
+:.loop_a ;a=firstpage
+add a, page_header_start
+ife [a], -1
+set pc, .done
+set b, [a]
+set [a], 0
+set a, b
+set pc, .loop_a
+:.done
+set [a], 0
+iaq 0
+set b, pop
+set pc, pop
+
+;free a page to make space for other processes. This should not be called in a signal handler.
+:fn_free_page ;Arguments: A=freed_page, Return: A=0 on success, errno on failure
+set push, b
+iaq 1
+set b, [current_process]
+shl b, 5
+set b, [b + process_first_pages_start]
+:.loop_a
+add b, page_header_start
+ife [b], a
+set pc, .found_it
+ife [b], -1
+set pc, .not_owned
+set b, [b]
+set pc, .loop_a
+:.found_it
+add a, page_header_start
+set [b], [a]
+set [a], 0
+set a, 0
+iaq 0
+set b, pop
+set pc, pop
+:.not_owned ;Process tried to free page owned by another process
+;This check is implemented, because not implementing it would require more code.
+set a, err_no_permission
+iaq 0
+set b, pop
+set pc, pop
+
+;Sets all words in specified page to 0
+:fn_clear_page ;Arguments A=page, Return: None.
+set push, i
+set push, j
+iaq 1
+shl a, 9
+set i, a
+add a, 512
+:.loop_a
+sti [i], 0
+sti [i], 0
+sti [i], 0
+sti [i], 0
+sti [i], 0 ;
+sti [i], 0 ;
+sti [i], 0 ;
+sti [i], 0 ;
+sti [i], 0
+sti [i], 0
+sti [i], 0
+sti [i], 0
+sti [i], 0 ;
+sti [i], 0 ;
+sti [i], 0 ;
+sti [i], 0 ;
+ifn i, a
+set pc, .loop_a
+iaq 0
+set j, pop
+set i, pop
+set pc, pop
+
+;DATA
+:page_header_start ;To store the next page of every page, 0xffff=last page of process.
+reserve 128
+
+:process_first_pages_start ;To store the first page of every process
+reserve 64 ;=max_process_num, update this when that changes.
+
+:current_process ;The process currently running, between 0 and max_process_num-1.
+dat 0x0000 ;Process manager should keep this up to date
+
+#segment last 990 ;Anything beyond this is not reserved by fn_init_MM
+:free_space_start
