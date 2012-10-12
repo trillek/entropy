@@ -8,6 +8,8 @@
 ;TODO:
 ; - Test if it all works like it's supposed to...
 
+;NOTE: -1 = 0xffff
+
 ;MEMORY MANAGER
 
 ;Implements paged memory, pages are always 512 words each.
@@ -31,6 +33,9 @@
 
 ;fn_clear_page		;Clears a page, setting all words within that page to 0.
 					;Arguments A=page to be cleared (0-127), Return: None.
+
+;fn_copy_page		;Arguments: A=source page (0-127), B=destination page (0-127), Return: None
+					;Copies an entire page to another page
 
 ;Many of these functions use the variable [current_process]. This should be kept up to date by the process manager or changed for testing purposes.
 
@@ -217,6 +222,40 @@ sti [i], 0 ;
 sti [i], 0 ;
 sti [i], 0 ;
 sti [i], 0 ;
+ifn i, a
+set pc, .loop_a
+iaq 0
+set j, pop
+set i, pop
+set pc, pop
+
+;Copies an entire page to another page
+:fn_copy_page ;Arguments: A=source page, B=destination page, Return: None
+set push, i
+set push, j
+iaq 1
+shl a, 9
+shl b, 9
+set i, a
+set j, b
+add a, 512
+:.loop_a
+sti [i], [j]
+sti [i], [j]
+sti [i], [j]
+sti [i], [j]
+sti [i], [j] ;
+sti [i], [j] ;
+sti [i], [j] ;
+sti [i], [j] ;
+sti [i], [j]
+sti [i], [j]
+sti [i], [j]
+sti [i], [j]
+sti [i], [j] ;
+sti [i], [j] ;
+sti [i], [j] ;
+sti [i], [j] ;
 ifn i, a
 set pc, .loop_a
 iaq 0
