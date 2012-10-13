@@ -5,3 +5,4 @@
 ; --------------------------------------------
 ;initialize hardware drivers
 JSR lib_STDIO_init
+JSR fn_init_MM
