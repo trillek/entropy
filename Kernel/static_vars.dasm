@@ -9,25 +9,81 @@
 ;-------
 
 ;LEM-1802 Interrupts and dimensions
-#define LEM_INT_MAPSCRN     0
-#define LEM_INT_MAPFONT     1
-#define LEM_INT_MAPPALT     2
-#define LEM_INT_SETBRDR     3
-#define LEM_INT_DMPFONT     4
-#define LEM_INT_DMPPALT     5
+#define LEM_INT_MAPSCRN     0x0
+#define LEM_INT_MAPFONT     0x1
+#define LEM_INT_MAPPALT     0x2
+#define LEM_INT_SETBRDR     0x3
+#define LEM_INT_DMPFONT     0x4
+#define LEM_INT_DMPPALT     0x5
+
 #define LEM_WIDTH           32
 #define LEM_HEIGHT          12
 
 ;Generic Clock Interrupts
-#define CLOCK_INT_SETTICK       0
-#define CLOCK_INT_GETTICK       1
-#define CLOCK_INT_TOGLINT       2
+#define CLOCK_INT_SETTICK   0x0
+#define CLOCK_INT_GETTICK   0x1
+#define CLOCK_INT_TOGLINT   0x2
 
 ;Generic Keyboard Interrupts
-#define KEY_INT_CLRBUFF     0
-#define KEY_INT_NEXTKEY     1
-#define KEY_INT_KEYPRSS     2
-#define KEY_INT_TOGLINT     3
+#define KEY_INT_CLRBUFF     0x0
+#define KEY_INT_NEXTKEY     0x1
+#define KEY_INT_KEYPRSS     0x2
+#define KEY_INT_TOGLINT     0x3
+
+;MF35D Interrupts, States, Errors and specs
+#define MFD_INT_POLLDEV     0x0
+#define MFD_INT_TOGLINT     0x1
+#define MFD_INT_READSEC     0x2
+#define MFD_INT_WRITSEC     0x3
+
+#define MFD_ERR_NONE        0x0
+#define MFD_ERR_BUSY        0x1
+#define MFD_ERR_NOMEDIA     0x2
+#define MFD_ERR_PROTECT     0x3
+#define MFD_ERR_EJECT       0x4
+#define MFD_ERR_BADSEC      0x5
+#define MFD_ERR_BROKEN      0xffff
+
+#define MFD_STA_NOMEDIA     0x0
+#define MFD_STA_READY       0x1
+#define MFD_STA_READYWP     0x2
+
+#define MFD_TRACKS          0x50   ;80
+#define MFD_SECPTRK         0x12   ;18
+#define MFD_TOTLSEC         0x5A0  ;1440
+#define MFD_WRDPSEC         0x200  ;512
+
+;SPED-3 Interrupts, States, and Errors
+#define SPED_INT_POLLDEV    0x0
+#define SPED_INT_MAPREG     0x1
+#define SPED_INT_ROTATE     0x2
+
+#define SPED_STA_NODATA     0x0
+#define SPED_STA_RUNNING    0x1
+#define SPED_STA_TURNING    0x2
+
+#define SPED_ERR_NONE       0x0
+#define SPED_ERR_BROKEN     0xffff
+
+;SPC2000 Interrupts, Errors, and Units
+#define SPC_INT_STATUS      0x0
+#define SPC_INT_SETSKIP     0x1
+#define SPC_INT_TRIGGER     0x2
+#define SPC_INT_SETUNIT     0x3
+
+#define SPC_ERR_EVACIMD     0x0
+#define SPC_ERR_VACUUM      0x1
+#define SPC_ERR_FUEL        0x2
+#define SPC_ERR_GRAVITY     0x3
+#define SPC_ERR_ANGMNTM     0x4
+#define SPC_ERR_DOORS       0x5
+#define SPC_ERR_MECHERR     0x6
+#define SPC_ERR_UNKERR      0xffff
+
+#define SPC_UNT_MILSEC      0x0
+#define SPC_UNT_MIN         0x1
+#define SPC_UNT_DAY         0x2
+#define SPC_UNT_YEAR        0x3
 
 ;Display colors
 ; IE CHAR_CAPA + (COLOR_FG*COLOR_CYAN) + (COLOR_BG*COLOR_LTGRAY)
