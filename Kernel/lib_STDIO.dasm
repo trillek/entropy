@@ -322,4 +322,5 @@
 :lib_STDIO_MonitorID dat 0x0000
 :lib_STDIO_ProjectorID dat 0x0000
 :lib_STDIO_Projector_StackPos dat lib_STDIO_Projector_Stack
-:lib_STDIO_Projector_Stack dat 0x000
+:lib_STDIO_Projector_Stack
+reserve 200
