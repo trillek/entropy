@@ -19,10 +19,11 @@
 ;Performs hardware detection of LEM1802 and Generic Keyboard,
 ;saves HW id, and turns on LEM1802
 ;@destroys A,B,C,J,X,Y
+;@see thePalindrome
 :lib_STDIO_init
     HWN J
     :lib_STDIO_initLoop
-        ;loop to find LEM1802 and Generic Keyboard
+        ;loop to find LEM1802, SPED-3, and Generic Keyboard
         HWQ J
         IFE B, 0x30CF
             IFE A, 0x7406 
@@ -30,6 +31,9 @@
         IFE B, 0x7349
             IFE A, 0xF615 
                 JSR lib_STDIO_initScreen
+        IFE B, 0xBF3C
+            IFE A, 0x42BA
+                JSR lib_STDIO_initProjector
         SUB J, 1
         IFA J, -1
             SET PC, lib_STDIO_initLoop
@@ -45,6 +49,10 @@
     ;Save HW id of keyboard
     SET [lib_STDIO_KeyboardID], J
     SET PC, POP
+    :lib_STDIO_initProjector
+    ;Save HW id of projector
+    SET [lib_STDIO_ProjectorID], J
+    SET PC, POP
     :lib_STDIO_initLoopEnd
     ;Set bounds for monitor buffer
     SET [lib_STDIO_MonitorPos], 0x8000
@@ -59,6 +67,7 @@
 ;@params B 
 ;@returns A 
 ;@destroys C
+;@see thePalindrome
 :lib_STDIO_getChar
     ; INPUT: B, A
     ; OUTPUT: A
@@ -107,6 +116,7 @@
 ;@params [A] Pointer to memory location of first character to print
 ;@params B Number of characters to print
 ;@params C Color to print in (Foreground<<12)+(Background<<8)
+;@see thePalindrome
 :lib_STDIO_print
     SET PUSH, I
     ADD B, A
@@ -140,6 +150,7 @@
 
 ;@name lib_STDIO_scroll
 ;Scroll the text on the screen up 1 line?
+;@see thePalindrome
 :lib_STDIO_scroll
     ; INPUT: NONE
     ; OUTPUT: NONE
@@ -173,6 +184,7 @@
 
 ;@name lib_STDIO_enter
 ;Moves the position of the next character to the next line
+;@see thePalindrome
 :lib_STDIO_enter
     SET PUSH, J
     SET PUSH, A
@@ -190,9 +202,124 @@
     SET J, POP
     SET PC, POP
     
+;@name lib_STDIO_SPED3_PUSH
+;Takes the X,Y,Z, and color, and adds it to the vertex stack
+;@params X the X co-ord of the vertex
+;@params Y the Y co-ord of the vertex
+;@params Z the Z co-ord of the vertex
+;@params C the color of the vertex, with 1 as red, 2 as green, 3 as blue, with bit 3 being intensity
+;@returns C Which position in the stack the vertex is
+;@see thePalindrome
+;NOTE, DO NOT USE, STACK ISN'T REAL!
+:lib_STDIO_SPED3_PUSH
+    SET PUSH, A
+    SET A, 0
+    JSR lib_STDIO_SPED3_PUT
+    SET A, POP
+    SET C, [lib_STDIO_Projector_StackPos]
+    SUB C, lib_STDIO_Projector_Stack
+    SUB C, 2
+    DIV C, 2
+    SET PC, POP
+    
+;@name lib_STDIO_SPED3_PUT
+;Helper function, actually modifies the vertex stack
+;@params A the vertex to edit, 0 being the top
+;@params X the X co-ord of the vertex
+;@params Y the Y co-ord of the vertex
+;@params Z the Z co-ord of the vertex
+;@params C the color of the vertex, with 1 as red, 2 as green, 3 as blue, with bit 3 being intensity
+;@see thePalindrome
+;NOTE, DO NOT USE, STACK ISN'T REAL!
+:lib_STDIO_SPED3_PUT
+    SET PUSH, B
+    SET B, 0
+    IFE A, 0
+        ADD PC, 5
+    MUL A, 2
+    ADD A, 2
+    ADD C, lib_STDIO_Projector_Stack
+    ADD PC, 4
+    
+    ;SET A to the top vertex
+    SET A, [lib_STDIO_Projector_StackPos]
+    SUB A, 2
+    SET B, 1
+   
+    
+    SET PUSH, Y
+    SHL Y, 8
+    ADD Y, X
+    SET [A], Y
+    IFE B, 0
+        ADD PC, 3
+    ADD [lib_STDIO_Projector_StackPos], 1
+    ADD PC, 1
+    
+    ADD A, 1
+    
+    SET Y, POP
+    SHL C, 8
+    ADD C, Z
+    SET [A], C
+    IFE B, 0
+        ADD PC, 3
+    ADD [lib_STDIO_Projector_StackPos], 1
+    ADD PC, 1
+    
+    ADD A, 1
+    
+    SET B, POP
+    SET PUSH, X
+    SET PUSH, Y
+    SET X, lib_STDIO_Projector_Stack
+    SET Y, [lib_STDIO_Projector_StackPos]
+    SUB Y, lib_STDIO_Projector_Stack
+    SUB Y, 2
+    DIV Y, 2
+    SET A, 1
+    HWI [lib_STDIO_ProjectorID]
+    SET Y, POP
+    SET X, POP
+    SET PC, POP
+    
+;@name lib_STDIO_SPED3_GET
+;Gets vertex C, if C is 0, return the top vertex
+;@params C vertex to get
+;@returns X the X co-ord of the vertex
+;@returns Y the Y co-ord of the vertex
+;@returns Z the Z co-ord of the vertex
+;@retruns C the color of the vertex, with 1 as red, 2 as green, 3 as blue, with bit 3 being intensity
+;@see thePalindrome
+;NOTE, DO NOT USE, STACK ISN'T REAL!
+:lib_STDIO_SPED3_GET
+    IFE C, 0
+        ADD PC, 5
+    MUL C, 2
+    ADD C, 2
+    ADD C, lib_STDIO_Projector_Stack
+    ADD PC, 3
+    
+    ;SET C to the top vertex
+    SET C, [lib_STDIO_Projector_StackPos]
+    SUB C, 2
+    
+    SET X, [C]
+    BOR X, 0x00FF
+    SET Y, [C]
+    SHR Y, 8
+    ADD C, 1
+    SET Z [C]
+    BOR Z, 0x00FF
+    SET C, [C]
+    SHR C, 8
+    SET PC, POP
     
 :lib_STDIO_KeyboardID dat 0x0000
 :lib_STDIO_MonitorPos dat 0x0000
 :lib_STDIO_MonitorEnd dat 0x0000
 :lib_STDIO_MonitorStart dat 0x0000
 :lib_STDIO_MonitorID dat 0x0000
+:lib_STDIO_ProjectorID dat 0x0000
+:lib_STDIO_Projector_StackPos dat lib_STDIO_Projector_Stack
+:lib_STDIO_Projector_Stack dat 0x000
