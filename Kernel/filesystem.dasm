@@ -269,11 +269,11 @@ jsr fs_get_file_length
 ifl A, B
 	set pc, .extend
 ifg A, B
-	set pc, .shirnk
+	set pc, .shrink
 set A, pop
 set pc, pop
-.shrink
-;//TODO
+:.shrink;//TODO
+:.extend;//TODO
 
 :fs_file_set_metadata	;A - starting cluster, B - address of metadata
 set push, X
@@ -501,7 +501,7 @@ set push, J
 set push, B
 set I, 0x0
 set J, fs_dir_entry
-.loop
+:.loop
 sti [J], [A]
 add A, 0x1
 ifl i, 0x5
@@ -538,7 +538,7 @@ set A, [fs_dir]
 jsr fs_load_file
 set push, A
 set I, 0x0
- .loop
+ :.loop
  set push, A
  set B, fs_dir_entry
  set C, 0x5
@@ -561,7 +561,7 @@ set C, pop
 set I, pop
 set A, 0xFFFF
 set pc, pop
-.end
+:.end
 set ex, pop
 set A, pop
 jsr mem_free
@@ -583,7 +583,7 @@ jsr fs_find_entry_by_name
 jsr fs_dir_push
 set B, pop
 set pc, pop
-.back
+:.back
 jsr fs_dir_pop
 set A, pop
 set B, pop
@@ -594,14 +594,14 @@ set pc, pop
 :fs_dir_push	;A - a dir to move to
 set push, I
 set I, fs_dir_tree
-.loop
+:.loop
  ife [I], 0x0
  	set pc, .end
  add I, 0x1
  ifn I, fs_dir_tree_end
  	set pc, .loop
 set I, fs_dir_tree
-.end
+:.end
 set [I], A
 jsr fs_dir_update
 set I, pop
@@ -610,7 +610,7 @@ set pc, pop
 :fs_dir_pop	;output: A - startng cluster of current dir before popping
 set push, I
 set I, fs_dir_tree_end
-.loop
+:.loop
 	ifn [I], 0x0
 		set pc, .end
 	sub I, 0x1
@@ -628,7 +628,7 @@ set pc, pop
 :fs_dir_peek	;output: A - starting cluster of current dir
 set push, I
 set I, fs_dir_tree_end
-.loop
+:.loop
 	ifn [I], 0x0
 		set pc, .end
 	sub I, 0x1
