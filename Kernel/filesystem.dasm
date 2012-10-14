@@ -146,18 +146,15 @@ set push, X
 set X, A
 jsr fs_get_free_sector
 set push, A
+.loop
 set B, A
 add B, [fs_FAT]
-:.loop
-ife X, 0x0
-	set pc, .end
+set [B], 0xFFFF
 jsr fs_get_free_sector
 set [B], A
-set B, A
-add B, [fs_FAT]
 sub X, 0x1
-set pc, .loop
-:.end
+ifn X, 0x0
+	set pc, .loop
 set [B], 0xFFFF
 jsr fs_update_FAT
 set A, pop
@@ -170,10 +167,13 @@ set push, I
 set I, 0x0
 :.loop
 jsr fs_get_FAT_entry
+ife A, 0x0
+	set pc, .end
 add I, 0x1
 ifn A, 0xFFFF
 	ifl I, 0x5A0
 		set pc, .loop
+.end
 set A, I
 set I, pop
 set pc, pop
@@ -249,6 +249,7 @@ set A, pop
 set pc, pop
 
 :fs_delete_file	;A - starting cluster
+set push, A
 set push, B
 :.loop
 set B, A
@@ -258,6 +259,7 @@ set [B], 0x0
 ifn A, 0xFFFF
 	set pc, .loop
 set B, pop
+set A, pop
 jsr fs_update_FAT
 set pc, pop
 
@@ -272,8 +274,57 @@ ifg A, B
 	set pc, .shrink
 set A, pop
 set pc, pop
-:.shrink;//TODO
-:.extend;//TODO
+ .shrink
+	set push, C
+	set push, I
+	set I, 0x0
+  .shrink_loop
+	set C, A
+	jsr fs_get_FAT_entry
+	add C, [fs_FAT]
+	ife I, B
+		set [C], 0xFFFF
+	ifg I, B
+		set [C], 0x0
+	add I, 0x1
+	ifn A, 0xFFFF
+		set pc, .shrink_loop
+	jsr fs_update_FAT
+	set I, pop
+	set C, pop
+	set A, pop
+set pc, pop
+ .extend
+ 	set push, C
+ 	set push, I
+ 	set I, 0x0
+   .extend_loop
+   	set C, A
+   	jsr fs_get_FAT_entry
+   	add C, [fs_FAT]
+   	ifl I, B
+   		set pc, .extend_loop_end
+   	set push, A
+   	set [C], 0xFFFF
+   	jsr fs_get_free_sector
+   	ife A, 0x0
+   		set pc, .extend_end
+   	set [C], A
+   	ife I, B
+   		set [C], 0xFFFF
+   	ife I, B
+		set peek, 0xFFFF   	
+   	set A, pop
+   	.extend_loop_end
+   	add I, 0x1
+   	ifn A, 0xFFFF
+   		set pc, .extend_loop
+   	.extend_end
+   	jsr fs_update_FAT
+   	set I, pop
+   	set C, pop
+   	set A, pop
+set pc, pop
 
 :fs_file_set_metadata	;A - starting cluster, B - address of metadata
 set push, X
@@ -501,7 +552,7 @@ set push, J
 set push, B
 set I, 0x0
 set J, fs_dir_entry
-:.loop
+.loop
 sti [J], [A]
 add A, 0x1
 ifl i, 0x5
@@ -538,7 +589,7 @@ set A, [fs_dir]
 jsr fs_load_file
 set push, A
 set I, 0x0
- :.loop
+ .loop
  set push, A
  set B, fs_dir_entry
  set C, 0x5
@@ -561,7 +612,7 @@ set C, pop
 set I, pop
 set A, 0xFFFF
 set pc, pop
-:.end
+.end
 set ex, pop
 set A, pop
 jsr mem_free
@@ -583,7 +634,7 @@ jsr fs_find_entry_by_name
 jsr fs_dir_push
 set B, pop
 set pc, pop
-:.back
+.back
 jsr fs_dir_pop
 set A, pop
 set B, pop
@@ -594,14 +645,14 @@ set pc, pop
 :fs_dir_push	;A - a dir to move to
 set push, I
 set I, fs_dir_tree
-:.loop
+.loop
  ife [I], 0x0
  	set pc, .end
  add I, 0x1
  ifn I, fs_dir_tree_end
  	set pc, .loop
 set I, fs_dir_tree
-:.end
+.end
 set [I], A
 jsr fs_dir_update
 set I, pop
@@ -610,7 +661,7 @@ set pc, pop
 :fs_dir_pop	;output: A - startng cluster of current dir before popping
 set push, I
 set I, fs_dir_tree_end
-:.loop
+.loop
 	ifn [I], 0x0
 		set pc, .end
 	sub I, 0x1
@@ -628,7 +679,7 @@ set pc, pop
 :fs_dir_peek	;output: A - starting cluster of current dir
 set push, I
 set I, fs_dir_tree_end
-:.loop
+.loop
 	ifn [I], 0x0
 		set pc, .end
 	sub I, 0x1
