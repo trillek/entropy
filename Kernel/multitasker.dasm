@@ -1,0 +1,51 @@
+; --------------------------------------------
+; Title:   multitasker
+; Author:  Alex
+; Date:    10/15/2012
+; Version: 
+; --------------------------------------------
+
+;@name multitasker_Init
+;starts the timer interrupt, and sets up the basic data structure
+;@see thePalindrome
+:multitasker_Init
+    :multitasker_Init_Loop
+        HWQ J
+        IFE B, 0x12d0
+            IFE A, 0xb402
+                JSR multitasker_Init_Clock
+        ADD J, 1
+        SET PC, multitasker_Init_Loop
+            
+    :multitasker_Init_Clock
+        SET A, J
+        JSR Clock_SetID
+    SET A, 12
+    JSR Clock_SetTicksec
+    SET A, 1
+    JSR Clock_SetIntMsg
+    IAS multitasker_Interrupt
+    
+;@name multitasker_Interrupt
+;handles the main interrupt
+:multitasker_Interrupt
+    IFN A, 1
+        RFI 0
+    IAS 0
+    IAS multitasker_Interrupt
+    RFI 0
+    
+;Definition of datastructure
+;Current PC
+;Registers (ABCIXYZJ)
+;Where the stack is hiding
+:multitasker_Progs_0
+    :multitasker_Progs_0A
+    :multitasker_Progs_0B
+    :multitasker_Progs_0C
+    :multitasker_Progs_0I
+    :multitasker_Progs_0X
+    :multitasker_Progs_0Y
+    :multitasker_Progs_0Z
+    :multitasker_Progs_0J
+    :multitasker_Progs_0Stack
