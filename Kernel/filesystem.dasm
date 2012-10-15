@@ -275,9 +275,10 @@ ifg A, B
 set A, pop
 set pc, pop
  .shrink
+ 	set A, peek
 	set push, C
 	set push, I
-	set I, 0x0
+	set I, 0x1
   .shrink_loop
 	set C, A
 	jsr fs_get_FAT_entry
@@ -295,18 +296,25 @@ set pc, pop
 	set A, pop
 set pc, pop
  .extend
+ 	set A, peek
  	set push, C
  	set push, I
- 	set I, 0x0
+ 	set I, 0x1
    .extend_loop
    	set C, A
    	jsr fs_get_FAT_entry
    	add C, [fs_FAT]
    	ifl I, B
-   		set pc, .extend_loop_end
+   		ifn A, 0xFFFF
+   			ifn A, 0x0
+   				set pc, .extend_loop_end
    	set push, A
    	set [C], 0xFFFF
    	jsr fs_get_free_sector
+   	ife peek, 0xFFFF
+   		set peek, A
+   	ife peek, 0x0
+   		set peek, A
    	ife A, 0x0
    		set pc, .extend_end
    	set [C], A
