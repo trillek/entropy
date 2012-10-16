@@ -1,8 +1,15 @@
+; --------------------------------------------
+; Title:   LibPixel
+; Author:  macman31
+; Date:    10/16/2012
+; Version: 0x0001
+; --------------------------------------------
+
 ; -------------------- START OF LibPixel --------------------
 
 ; TODO : Double buffering for picture drawing, VRAM location (+ double buffering location), reset VRAM to default after reset, line drawing, multiline drawing
 
-; LibPixel - a multi-usage drawing library wrote by macman31
+; LibPixel - a multi-usage drawing library written by macman31
 ; Version : 0x0001
 ; Tested (working) on : 0x10co.de, dcpu.ru, Tomato, ...
 ;
