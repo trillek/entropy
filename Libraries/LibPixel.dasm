@@ -1,0 +1,589 @@
+; --------------------------------------------
+; Title:   LibPixel
+; Author:  macman31
+; Date:    10/16/2012
+; Version: 0x0001
+; --------------------------------------------
+
+; -------------------- START OF LibPixel --------------------
+
+; TODO : Double buffering for picture drawing, VRAM location (+ double buffering location), reset VRAM to default after reset, line drawing, multiline drawing
+
+; LibPixel - a multi-usage drawing library written by macman31
+; Version : 0x0001
+; Tested (working) on : 0x10co.de, dcpu.ru, Tomato, ...
+;
+; Please don't modify this library before talking with macman31 about that ! (private message on Enjin, for example, or Skype : macman31)
+; 
+; This library tend to be compliant with RFC X1000, except for a few things (a few functions, and the return value is not always on the register A)
+; 
+; Usage of the lib :
+; JSR LibPixel_findScreen ; (or set yourself the value of the "LibPixel_screenID" variable)
+; JSR LibPixel_init
+; Use the library here
+; JSR LibPixel_reset ; (to go back to original LEM1082 mode)
+; 
+; Avaible functions (you must only use those) :
+; LibPixel_findScreen, LibPixel_init, LibPixel_reset, LibPixel_clearScreen, LibPixel_setPixCoord, LibPixel_flipPixCoord, LibPixel_resetPixCoord, LibPixel_setPixPos, LibPixel_flipPixPos, LibPixel_resetPixPos, LibPixel_convertCoordPos, LibPixel_convertPosCoord, LibPixel_setBorderColor, LibPixel_drawSavedPicture
+; Avaible variables (You may modify only those variables yourself) :
+; LibPixel_colorFB, LibPixel_screenID
+; 
+; Each function and variable is rapidly documented, as well as the position and coordonate system (in the "convert" functions)
+; In case you need a complete example of the usage of LibPixel here is one :
+; 
+; ; -- START CODE --
+; JSR LibPixel_findScreen
+; JSR LibPixel_init
+; 
+; 
+; SET A, 0x0001
+; JSR LibPixel_setPixPos ; Display the second pixel from top-left on white on black background (default color)
+; 
+; SET B, 5
+; SET C, 0
+; JSR LibPixel_setPixCoord ; Display the fifth pixel from top-left on white on black background (default color)
+; 
+; SET B, 1
+; SET C, 0
+; JSR LibPixel_flipPixCoord ; Flip the value of the second pixel from top-left : it disapear (was set from the first "JSR LibPixel_setPixPos")
+; 
+; SET [LibPixel_colorFB], 0xBA00 ; Now draw in blue on a green background (see the custom palette)
+; 
+; SET B, 31
+; SET C, 23
+; JSR LibPixel_flipPixCoord ; Draw a pixel in blue on a green background in the center of the screen. Notice here the color limitation : only 2 colors per LEM1082 cell !
+;
+; SET B, 5
+; SET C, 0
+; JSR LibPixel_resetPixCoord ; Reset the pixel at coordinate 5, 0 using the new colors !
+;
+;
+; JSR LibPixel_reset ; Go back to normal mode, clear the screen
+; JSR end ; End of the program
+; 
+; :end
+;    SET PC, end
+; 
+; ; Copy paste the whole LibPixel library under this point for this program to work !
+; ; -- END CODE --
+;
+; Another example code (of the drawSavedPixture function) :
+;
+; ; -- START CODE --
+; JSR LibPixel_findScreen
+;
+; SET A, test
+; JSR LibPixel_drawSavedPicture
+;
+; JSR end
+;
+; :end
+;    SET PC, end
+;
+; :test
+;    DAT 0xAB0A ; colors + border
+;    DAT 0x0010 ; pixel addr 1
+;    DAT 0xAB0C ; new colors + change
+;    DAT 0x003F ; pixel addr 3 + end
+;
+; ; Copy paste the whole LibPixel library under this point for this program to work !
+; ; -- END CODE --
+
+; ============== LibPixel functions ==============
+
+:LibPixel_findScreen
+   ; Optional : if not used, the variable "LibPixel_screenID" MUST BE SET to the ID of the LEM1802 before any LibPixel command
+   SET PUSH, X
+   SET PUSH, Y
+   SET PUSH, I
+   SET PUSH, J
+   HWN J
+   SET I, 0
+   :LibPixel_findScreenLoop
+      HWQ I
+      IFE A, 0xF615 ; LEM1802 Monitor (lower 16 bits)
+         IFE B, 0x7349 ; LEM1802 Monitor (upper 16 bits)
+              SET [LibPixel_screenID], I
+      ADD I, 1
+      IFN I, J
+         SET PC, LibPixel_findScreenLoop
+   SET J, POP
+   SET I, POP
+   SET Y, POP
+   SET X, POP
+   SET PC, POP
+
+:LibPixel_init
+   ; Initiate the drawing mode using LibPixel, clear the screen
+   SET A, 0
+   SET B, 0x8000
+   HWI [LibPixel_screenID]
+   SET A, 1
+   SET B, LibPixel_FONT
+   HWI [LibPixel_screenID]
+   SET A, 2
+   SET B, LibPixel_PALETTE
+   HWI [LibPixel_screenID]
+   JSR LibPixel_clearScreen
+   SET PC, POP
+
+:LibPixel_reset
+   ; Reset to original LEM1802 mode, clear the screen
+   SET [LibPixel_colorFB], 0x0000
+   JSR LibPixel_clearScreen
+   SET A, 1
+   SET B, 0
+   HWI [LibPixel_screenID]
+   SET A, 2
+   SET B, 0
+   HWI [LibPixel_screenID]
+   SET PC, POP
+
+:LibPixel_clearScreen
+   ; Clear the screen with LibPixel_colorFB colors
+   SET A, 0x8000
+   SET B, A
+   ADD B, 0x0182
+   :LibPixel_clearScreenLoop
+      SET [A], [LibPixel_colorFB]
+      ADD A, 1
+      IFL A, B
+         SET PC, LibPixel_clearScreenLoop
+   SET PC, POP
+
+:LibPixel_setBorderColor
+   ; Set the border color to the last 4 lower bits of B (0x000F = F = white for example)
+   ; I/ B : Border color
+   SET A, 3
+   HWI [LibPixel_screenID]
+   SET PC, POP
+
+:LibPixel_setPixCoord
+   ; Display a pixel at coordinates B, C
+   ; I/ B : Abscissa, C : Orderly
+   IFG B, 0x003F
+      SET PC, POP
+   IFG C, 0x002F
+      SET PC, POP
+   SET PUSH, X
+   JSR LibPixel_convertCoordAddr
+   SET C, [B]
+   JSR LibPixel_isColorReversed
+   IFE X, 0x0001
+      XOR C, 0x00FF
+   AND C, 0x00FF
+   BOR C, A
+   BOR C, [LibPixel_colorFB]
+   JSR LibPixel_setColorNormal
+   IFB C, 0x0080
+      JSR LibPixel_xorInvColor
+   SET [B], C
+   SET X, POP
+   SET PC, POP
+   
+:LibPixel_flipPixCoord
+   ; Flip the pixel value at coordinates B, C
+   ; I/ B : Abscissa, C : Orderly
+   IFG B, 0x003F
+      SET PC, POP
+   IFG C, 0x002F
+      SET PC, POP
+   SET PUSH, X
+   JSR LibPixel_convertCoordAddr
+   SET C, [B]
+   JSR LibPixel_isColorReversed
+   IFE X, 0x0001
+      XOR C, 0x00FF
+   AND C, 0x00FF
+   XOR C, A
+   BOR C, [LibPixel_colorFB]
+   JSR LibPixel_setColorNormal
+   IFB C, 0x0080
+      JSR LibPixel_xorInvColor
+   SET [B], C
+   SET X, POP
+   SET PC, POP
+   
+:LibPixel_resetPixCoord
+   ; Reset the pixel value at coordinates B, C
+   ; I/ B : Abscissa, C : Orderly
+   IFG B, 0x003F
+      SET PC, POP
+   IFG C, 0x002F
+      SET PC, POP
+   SET PUSH, X
+   JSR LibPixel_convertCoordAddr
+   SET C, [B]
+   JSR LibPixel_isColorReversed
+   IFE X, 0x0001
+      XOR C, 0x00FF
+   AND C, 0x00FF
+   XOR A, 0x00FF
+   AND C, A
+   BOR C, [LibPixel_colorFB]
+   JSR LibPixel_setColorNormal
+   IFB C, 0x0080
+     JSR LibPixel_xorInvColor
+   SET [B], C
+   SET X, POP
+   SET PC, POP
+
+:LibPixel_xorInvColor
+   ; Do a XOR on the 8 lower bit of the value of C, and invert the 8 upper bit of the value of C (0xab10 => 0xbaef)
+   ; It also set the "reversed" flag for the VRAM value in B
+   ; I/ C : Color+pixel value, B : VRAM value
+   ; O/ C : New color+pixel value (reversed + XOR)
+   SET PUSH, X
+   SET A, 0x0F00
+   AND A, C
+   SET X, 0x00FF
+   AND X, C
+   XOR X, 0x00FF
+   SHR C, 4
+   SHL A, 4
+   ADD C, A
+   AND C, 0xFF00
+   BOR C, X
+   JSR LibPixel_setColorReversed
+   SET X, POP
+   SET PC, POP
+
+:LibPixel_setPixPos
+   ; Display a pixel at position A
+   ; I/ A : Position
+   JSR LibPixel_convertPosCoord
+   JSR LibPixel_setPixCoord
+   SET PC, POP
+   
+:LibPixel_flipPixPos
+   ; Flip the pixel value at position A
+   ; I/ A : Position
+   JSR LibPixel_convertPosCoord
+   JSR LibPixel_flipPixCoord
+   SET PC, POP
+
+:LibPixel_resetPixPos
+   ; Reset the pixel value at position A
+   ; I/ A : Position
+   JSR LibPixel_convertPosCoord
+   JSR LibPixel_resetPixCoord
+   SET PC, POP
+
+:LibPixel_convertCoordPos
+   ; Convert a coordinate B, C in a position A
+   ; I/ B : Abscissa, C : Orderly
+   ; O/ A : Position
+   ; 0  1  2  3 ..... 3E 3F
+   ; 40 41 42 43 .... 7E 7F
+   ; 80 ...................
+   ; ......................
+   ; ................... BFF
+   SET A, C
+   SHL A, 6
+   ADD A, B
+   SET PC, POP
+   
+:LibPixel_convertPosCoord
+   ; Convert a position A in a coordinate B, C
+   ; I/ A : Position
+   ; I/ B : Abscissa, C : Orderly
+   ; 0,0  1,0  2,0 ..... 3E,0 3F,0
+   ; 0,1  1,1  2,1 ..... 3E,1 3F,1
+   ; 0,2 .........................
+   ; .............................
+   ; ........................ 3F,2F
+   SET C, A
+   SHR C, 6
+   SET B, EX
+   SHR B, 10
+   SET PC, POP
+   
+:LibPixel_convertCoordAddr
+   ; Convert a coordinate B, C into a pair of addresses understandable by the DCPU
+   ; I/ B : Abscissa, C : Orderly
+   ; O/ A : Binary value of the pixel in the VRAM to modify, B : VRAM value to modify
+   SET PUSH, X
+   SHR B, 1
+   SET X, EX
+   SHR X, 15
+   SHR C, 2
+   SET A, EX
+   SHR A, 13
+   SHL C, 5
+   ADD B, C
+   ADD B, 0x8000
+   BOR X, A
+   SET A, 1
+   SHL A, X
+   SET X, POP
+   SET PC, POP
+   
+:LibPixel_convertAddrReversed
+   ; WARNING ! NOT COMPLIANT WITH RFCX1000 ! USE ONLY IN isColorReversed, setColorReversed, setColorNormal !
+   ; Convert a VRAM value into a pair of addresses usefull to check if the color of the VRAM is reversed or not
+   ; I/ B : VRAM value
+   ; O/ Y : Reversed List index to check, Z : Binary value to check in the reversed list index value
+   SET X, B
+   SHL X, 4
+   SHR X, 8
+   SET Y, EX
+   SHR Y, 12
+   SET Z, 1
+   SHL Z, Y
+   SET Y, LibPixel_reversedColorList
+   ADD Y, X
+   SET PC, POP
+   
+:LibPixel_isColorReversed
+   ; WARNING ! NOT COMPLIANT WITH RFCX1000 ! USE ONLY IN LibPixel_setPixCoord, LibPixel_flipPixCoord, LibPixel_resetPixCoord !
+   ; I/ B : VRAM value to check the reversed state
+   ; O/ X : 0x0000 = not reversed, 0x0001 = reversed
+   SET PUSH, Y
+   SET PUSH, Z
+   JSR LibPixel_convertAddrReversed
+   SET X, 0x0000
+   IFB [Y], Z
+      SET X, 0x0001
+   SET Z, POP
+   SET Y, POP
+   SET PC, POP
+
+:LibPixel_setColorReversed
+   ; WARNING ! NOT COMPLIANT WITH RFCX1000 ! USE ONLY IN LibPixel_setPixCoord, LibPixel_flipPixCoord, LibPixel_resetPixCoord !
+   ; I/ B : VRAM value to set the reversed state to reversed
+   SET PUSH, Y
+   SET PUSH, Z
+   JSR LibPixel_convertAddrReversed
+   BOR [Y], Z
+   SET Z, POP
+   SET Y, POP
+   SET PC, POP
+   
+:LibPixel_setColorNormal
+   ; WARNING ! NOT COMPLIANT WITH RFCX1000 ! USE ONLY IN LibPixel_setPixCoord, LibPixel_flipPixCoord, LibPixel_resetPixCoord !
+   ; I/ B : VRAM value to set the reversed state to not reversed
+   SET PUSH, Y
+   SET PUSH, Z
+   JSR LibPixel_convertAddrReversed
+   XOR Z, 0xFFFF
+   AND [Y], Z
+   SET Z, POP
+   SET Y, POP
+   SET PC, POP
+
+:LibPixel_drawSavedPicture
+   ; Clear the screen, and draw a saved picture on screen
+   ; I/ A : RAM value of the start of the saved picture
+   SET PUSH, X
+   SET PUSH, Y
+   SET PUSH, Z
+   SET PUSH, I
+   SET PUSH, J
+   SET X, 0
+   SET Y, 0
+   SET Z, 0
+   SET I, A
+   SET A, [I]
+   SET B, A
+   AND A, 0xFF00
+   AND B, 0x000F
+   SET [LibPixel_colorFB], A
+   JSR LibPixel_setBorderColor
+   JSR LibPixel_init
+   :LibPixel_drawSavedPictureLoop
+      ADD I, 1
+      SET A, [I]
+      SET J, A
+      AND J, 0x000F
+      AND A, 0xFFF0
+      IFE J, 0x000C
+         SET PC, LibPixel_drawSavedPictureColorChange
+      SHR A, 4
+      IFE J, 0x0000
+         SET PC, LibPixel_drawSavedPictureSetPix
+      IFE J, 0x000F
+         SET PC, LibPixel_drawSavedPictureEnd
+      SET PC, LibPixel_drawSavedPictureLoop
+   :LibPixel_drawSavedPictureColorChange
+      SET [LibPixel_colorFB], A
+      SET PC, LibPixel_drawSavedPictureLoop
+   :LibPixel_drawSavedPictureSetPix
+      JSR LibPixel_setPixPos
+      SET PC, LibPixel_drawSavedPictureLoop
+   :LibPixel_drawSavedPictureEnd
+      JSR LibPixel_setPixPos
+      SET J, POP
+      SET I, POP
+      SET Z, POP
+      SET Y, POP
+      SET X, POP
+      SET PC, POP
+      
+; ============== LibPixel variables ==============
+
+:LibPixel_colorFB
+   ; Store the colors that will be used by others LibPixel functions : 4 upper bit : Foreground color, 4 next bit, Background color, 8 next bit : MUST BE 0 !
+   DAT 0xF000
+
+:LibPixel_screenID
+   ; Screen device ID, for hardware interruptions
+   DAT 0x0000
+
+:LibPixel_reversedColorList
+   ; Store a list of reversed color state for each VRAM value : default = 0 = not reversed, 1 = reversed
+   DAT 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000
+   DAT 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000
+   DAT 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000
+   DAT 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000
+
+:LibPixel_PALETTE
+   ; Custom LibPixel palette : Arne's 16 colors palette v20, DCPU-sorted
+   DAT 0x0000, 0x0223, 0x0492, 0x0058, 0x0C23, 0x0542, 0x0A62, 0x0AAA, 0x0345, 0x03AE, 0x0AC2, 0x0BDE, 0x0D79, 0x0E93, 0x0ED7, 0x0FFF
+
+:LibPixel_FONT
+   ; Custom LibPixel font
+   ; Decimal value of the pixels position in VRAM (0 = none) :
+   ; 1   2
+   ; 4   8
+   ; 16  32
+   ; 64  (128)
+   ; To draw the 128th pixel with others, LibPixel have to switch the background and foregrount colors, and to switch every pixel
+   ;
+   ; 0
+   DAT 0x0000, 0x0000
+   ; 1
+   DAT 0x0303, 0x0000
+   ; 2
+   DAT 0x0000, 0x0303
+   DAT 0x0303, 0x0303
+   ; 4
+   DAT 0x0C0C, 0x0000
+   DAT 0x0F0F, 0x0000
+   DAT 0x0C0C, 0x0303
+   DAT 0x0F0F, 0x0303
+   ; 8
+   DAT 0x0000, 0x0C0C
+   DAT 0x0303, 0x0C0C
+   DAT 0x0000, 0x0F0F
+   DAT 0x0303, 0x0F0F
+   DAT 0x0C0C, 0x0C0C
+   DAT 0x0F0F, 0x0C0C
+   DAT 0x0C0C, 0x0F0F
+   DAT 0x0F0F, 0x0F0F
+   ; 16
+   DAT 0x3030, 0x0000
+   DAT 0x3333, 0x0000
+   DAT 0x3030, 0x0303
+   DAT 0x3333, 0x0303
+   DAT 0x3C3C, 0x0000
+   DAT 0x3F3F, 0x0000
+   DAT 0x3C3C, 0x0303
+   DAT 0x3F3F, 0x0303
+   DAT 0x3030, 0x0C0C
+   DAT 0x3333, 0x0C0C
+   DAT 0x3030, 0x0F0F
+   DAT 0x3333, 0x0F0F
+   DAT 0x3C3C, 0x0C0C
+   DAT 0x3F3F, 0x0C0C
+   DAT 0x3C3C, 0x0F0F
+   DAT 0x3F3F, 0x0F0F
+   ; 32
+   DAT 0x0000, 0x3030
+   DAT 0x0303, 0x3030
+   DAT 0x0000, 0x3333
+   DAT 0x0303, 0x3333
+   DAT 0x0C0C, 0x3030
+   DAT 0x0F0F, 0x3030
+   DAT 0x0C0C, 0x3333
+   DAT 0x0F0F, 0x3333
+   DAT 0x0000, 0x3C3C
+   DAT 0x0303, 0x3C3C
+   DAT 0x0000, 0x3F3F
+   DAT 0x0303, 0x3F3F
+   DAT 0x0C0C, 0x3C3C
+   DAT 0x0F0F, 0x3C3C
+   DAT 0x0C0C, 0x3F3F
+   DAT 0x0F0F, 0x3F3F
+   DAT 0x3030, 0x3030
+   DAT 0x3333, 0x3030
+   DAT 0x3030, 0x3333
+   DAT 0x3333, 0x3333
+   DAT 0x3C3C, 0x3030
+   DAT 0x3F3F, 0x3030
+   DAT 0x3C3C, 0x3333
+   DAT 0x3F3F, 0x3333
+   DAT 0x3030, 0x3C3C
+   DAT 0x3333, 0x3C3C
+   DAT 0x3030, 0x3F3F
+   DAT 0x3333, 0x3F3F
+   DAT 0x3C3C, 0x3C3C
+   DAT 0x3F3F, 0x3C3C
+   DAT 0x3C3C, 0x3F3F
+   DAT 0x3F3F, 0x3F3F
+   ; 64
+   DAT 0xC0C0, 0x0000
+   DAT 0xC3C3, 0x0000
+   DAT 0xC0C0, 0x0303
+   DAT 0xC3C3, 0x0303
+   DAT 0xCCCC, 0x0000
+   DAT 0xCFCF, 0x0000
+   DAT 0xCCCC, 0x0303
+   DAT 0xCFCF, 0x0303
+   DAT 0xC0C0, 0x0C0C
+   DAT 0xC3C3, 0x0C0C
+   DAT 0xC0C0, 0x0F0F
+   DAT 0xC3C3, 0x0F0F
+   DAT 0xCCCC, 0x0C0C
+   DAT 0xCFCF, 0x0C0C
+   DAT 0xCCCC, 0x0F0F
+   DAT 0xCFCF, 0x0F0F
+   DAT 0xF0F0, 0x0000
+   DAT 0xF3F3, 0x0000
+   DAT 0xF0F0, 0x0303
+   DAT 0xF3F3, 0x0303
+   DAT 0xFCFC, 0x0000
+   DAT 0xFFFF, 0x0000
+   DAT 0xFCFC, 0x0303
+   DAT 0xFFFF, 0x0303
+   DAT 0xF0F0, 0x0C0C
+   DAT 0xF3F3, 0x0C0C
+   DAT 0xF0F0, 0x0F0F
+   DAT 0xF3F3, 0x0F0F
+   DAT 0xFCFC, 0x0C0C
+   DAT 0xFFFF, 0x0C0C
+   DAT 0xFCFC, 0x0F0F
+   DAT 0xFFFF, 0x0F0F
+   DAT 0xC0C0, 0x3030
+   DAT 0xC3C3, 0x3030
+   DAT 0xC0C0, 0x3333
+   DAT 0xC3C3, 0x3333
+   DAT 0xCCCC, 0x3030
+   DAT 0xCFCF, 0x3030
+   DAT 0xCCCC, 0x3333
+   DAT 0xCFCF, 0x3333
+   DAT 0xC0C0, 0x3C3C
+   DAT 0xC3C3, 0x3C3C
+   DAT 0xC0C0, 0x3F3F
+   DAT 0xC3C3, 0x3F3F
+   DAT 0xCCCC, 0x3C3C
+   DAT 0xCFCF, 0x3C3C
+   DAT 0xCCCC, 0x3F3F
+   DAT 0xCFCF, 0x3F3F
+   DAT 0xF0F0, 0x3030
+   DAT 0xF3F3, 0x3030
+   DAT 0xF0F0, 0x3333
+   DAT 0xF3F3, 0x3333
+   DAT 0xFCFC, 0x3030
+   DAT 0xFFFF, 0x3030
+   DAT 0xFCFC, 0x3333
+   DAT 0xFFFF, 0x3333
+   DAT 0xF0F0, 0x3C3C
+   DAT 0xF3F3, 0x3C3C
+   DAT 0xF0F0, 0x3F3F
+   DAT 0xF3F3, 0x3F3F
+   DAT 0xFCFC, 0x3C3C
+   DAT 0xFFFF, 0x3C3C
+   DAT 0xFCFC, 0x3F3F
+   DAT 0xFFFF, 0x3F3F
+
+; -------------------- END OF LibPixel --------------------
