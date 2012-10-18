@@ -23,10 +23,10 @@
 ;@see http://en.wikipedia.org/wiki/Half-precision_floating-point_format
 
 ;EXAMPLE CODE
-SET A, 1
+SET A, 30000 ;First value to add
 JSR uitof
 SET I, A
-SET A, 2
+SET A, 30000 ;Second value to add
 JSR uitof
 SET B, I
 JSR fadd
@@ -125,16 +125,27 @@ SUB PC, 1
 ;@returns A
 ;@see ColErr
 :fcmp
+    SET C, 0
+    IFE A, B
+            SET PC, .rtn
+    IFU A, -1
+        IFU B, -1
+            SET PC, .neg
     BOR A, 0x8000
     BOR B, 0x8000
     IFL A, B
         SET C, -1
-    IFE A, B
-        SET C, 0
     IFG A, B
         SET C, 1
+    :.rtn
     SET A, C
     SET PC, POP
+    :.neg
+    IFL A, B
+        SET C, 1
+    IFG A, B
+        SET C, -1
+    SET PC, .rtn
 
 ;@name fadd
 ;Adds the floats A and B (no pointers as these are single precision)
@@ -172,13 +183,14 @@ SUB PC, 1
 	ADD Y, X
 	SHR B, X
 	SET X, Y
-	SET PC, .cont
 	
 	;A and B are aligned, and X is the exponent
 	:.cont
 	ADD A, B
 	IFE EX, 0
 		SHL A, 1
+    IFN EX, 0
+        ADD X, 1
 	SHR A, 6
 	ADD X, 15
 	SHL X, 10
