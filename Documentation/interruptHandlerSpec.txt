@@ -1,0 +1,9 @@
+
+Temporary information on the workings of the interrupt handler.
+
+fn_request_handler_k (Only for kernel)
+Stores A as the signal handler address for this interrupt, then returns the interrupt to be used in A.
+The kernel should then tell the hardware to raise interrupts with message A.
+It is usually preferable to use a seperate handler for hardware.
+
+When an interrupt comes in, the interrupt handler will JSR to the corresponding signal handler with A still the same as the hardware just set when interrupting.
