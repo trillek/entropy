@@ -3,5 +3,5 @@ entropy
 
 Entropy kernel for DCPU-16
 
-See the Documentation folder for Coding practices
-We still need to agree on standards, so throw up a proposal
+The binaries currently cannot be used, and are still in development  
+We will let you know when they are functioning.

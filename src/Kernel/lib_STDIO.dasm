@@ -309,7 +309,7 @@
     SET Y, [C]
     SHR Y, 8
     ADD C, 1
-    SET Z [C]
+    SET Z, [C]
     BOR Z, 0x00FF
     SET C, [C]
     SHR C, 8
@@ -323,4 +323,4 @@
 :lib_STDIO_ProjectorID dat 0x0000
 :lib_STDIO_Projector_StackPos dat lib_STDIO_Projector_Stack
 :lib_STDIO_Projector_Stack
-reserve 200
+#reserve 200

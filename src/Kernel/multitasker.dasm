@@ -5,6 +5,8 @@
 ; Version: 
 ; --------------------------------------------
 
+#include "lib_clock.dasm"
+
 ;@name multitasker_Init
 ;starts the timer interrupt, and sets up the basic data structure
 ;@see thePalindrome
