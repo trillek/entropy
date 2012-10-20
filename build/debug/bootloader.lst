@@ -1,0 +1,29 @@
+../src/bootloader/main.dasm (line 14): [0x0000] 80C1            SET I, 0xFFFF
+../src/bootloader/main.dasm (line 15): [0x0001] 88C2            ADD I, 0x1
+../src/bootloader/main.dasm (line 16): [0x0002] 1A20            HWQ I
+../src/bootloader/main.dasm (line 17): [0x0003] 7C72 1EB3       IFE X, 0x1eb3
+../src/bootloader/main.dasm (line 18): [0x0005] 7C92 7E91       IFE Y, 0x7e91
+../src/bootloader/main.dasm (line 19): [0x0007] 7C12 7349       IFE A, 0x7349
+../src/bootloader/main.dasm (line 20): [0x0009] 7C32 F615       IFE B, 0xf615
+../src/bootloader/main.dasm (line 21): [0x000B] B052            IFE C, 0x000b
+../src/bootloader/main.dasm (line 22): [0x000C] 8B82            ADD PC, 0x1
+../src/bootloader/main.dasm (line 23): [0x000D] BF83            SUB PC, 0xE
+../src/bootloader/main.dasm (line 26): [0x000E] 8401            SET A, 0x0
+../src/bootloader/main.dasm (line 27): [0x000F] 1A40            HWI I
+../src/bootloader/main.dasm (line 28): [0x0010] 8432            IFE B, 0x0
+../src/bootloader/main.dasm (line 29): [0x0011] 9383            SUB PC, 0x3
+../src/bootloader/main.dasm (line 32): [0x0012]               #define SECTORS 0x10
+../src/bootloader/main.dasm (line 33): [0x0012] 8C01            SET A, 0x2
+../src/bootloader/main.dasm (line 34): [0x0013] C461            SET X, SECTORS
+../src/bootloader/main.dasm (line 35): [0x0014] 7C81 1E00       SET Y, (SECTORS-1)*0x200
+../src/bootloader/main.dasm (line 38): [0x0016] 7F01 8761       SET PUSH, 0x8761
+../src/bootloader/main.dasm (line 39): [0x0018] 7F01 6F81       SET PUSH, 0x6F81
+../src/bootloader/main.dasm (line 40): [0x001A] 7F01 8863       SET PUSH, 0x8863
+../src/bootloader/main.dasm (line 41): [0x001C] 7F01 9383       SET PUSH, 0x9383
+../src/bootloader/main.dasm (line 42): [0x001E] 7F01 8839       SET PUSH, 0x8839
+../src/bootloader/main.dasm (line 43): [0x0020] 7F01 1A40       SET PUSH, 0x1A40
+../src/bootloader/main.dasm (line 44): [0x0022] 7F01 0200       SET PUSH, 0x0200
+../src/bootloader/main.dasm (line 45): [0x0024] 7F01 7C83       SET PUSH, 0x7c83
+../src/bootloader/main.dasm (line 46): [0x0026] 7F01 8381       SET PUSH, 0x8381
+../src/bootloader/main.dasm (line 47): [0x0028] 7F01 8478       SET PUSH, 0x8478
+../src/bootloader/main.dasm (line 51): [0x002A] 6F81            SET PC, SP

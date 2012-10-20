@@ -265,13 +265,12 @@ set pc, pop
 
 ;DATA
 :page_header_start ;To store the next page of every page, 0xffff=last page of process.
-reserve 128
+#reserve 128
 
 :process_first_pages_start ;To store the first page of every process
-reserve 64 ;=max_process_num, update this when that changes.
+#reserve 64 ;=max_process_num, update this when that changes.
 
 :current_process ;The process currently running, between 0 and max_process_num-1.
 dat 0x0000 ;Process manager should keep this up to date
 
-#segment last 990 ;Anything beyond this is not reserved by fn_init_MM
-:free_space_start
+

@@ -4,6 +4,9 @@
 ; Version: 0x1
 ; --------------------------------------------
 ;initialize hardware drivers
-JSR lib_STDIO_init
 JSR fn_init_MM
 JSR multitasker_Init
+
+#include "mem_manager.dasm"
+#include "multitasker.dasm"
+:free_space_start
