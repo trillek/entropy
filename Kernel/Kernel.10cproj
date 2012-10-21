@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <project version="1.7.5" type="code">
   <name>Kernel</name>
   <properties>
@@ -17,5 +17,6 @@
     <file path="mem_manager.dasm" />
     <file path="filesystem.dasm" />
     <file path="lib_float.dasm" />
+    <file path="int_manager.dasm" />
   </files>
 </project>

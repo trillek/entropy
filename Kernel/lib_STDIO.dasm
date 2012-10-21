@@ -309,7 +309,7 @@
     SET Y, [C]
     SHR Y, 8
     ADD C, 1
-    SET Z [C]
+    SET Z, [C]
     BOR Z, 0x00FF
     SET C, [C]
     SHR C, 8

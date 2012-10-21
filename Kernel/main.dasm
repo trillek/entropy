@@ -6,4 +6,5 @@
 ;initialize hardware drivers
 JSR lib_STDIO_init
 JSR fn_init_MM
+JSR fn_init_IM
 JSR multitasker_Init
