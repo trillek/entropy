@@ -232,7 +232,13 @@ set pc, .finish
 :.current_handler ;raise interrupt immediately
 set a, [b]
 shl a, 1 ;mul x, 2
-set a, [a + (interrupt_header_start + 1)]
+
+;SHOULD COMPILE FINE, ERROR WITH ORGANIC
+;set a, [a + (interrupt_header_start + 1)]
+;This will work for now
+add a, (interrupt_header_start + 1)
+set a, [a]
+;End hotfix
 set c, [b]
 add c, signal_handler_table_start
 jsr [c]
@@ -249,14 +255,14 @@ rfi 0
 :interrupt_header_start ;stores handlers
 ;0x0 handler process
 ;0x1 handler address if prev is 0, handler message otherwise
-reserve 32		;max 16 custom interrupts
+#reserve 32		;max 16 custom interrupts
 :interrupt_header_end
 
 :signal_handler_table_start
 ;0x0 handler for process
-reserve 16
+#reserve 16
 
 :signal_table_start ;stores signal queues
 ;0x0 signal number
 ;0x1 signal sender
-reserve 512	;max_processes * signals_per_process * 2
+#reserve 512	;max_processes * signals_per_process * 2

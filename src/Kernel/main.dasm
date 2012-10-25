@@ -14,6 +14,6 @@ JSR multitasker_Init
 
 #include "mem_manager.dasm"
 #include "multitasker.dasm"
-#include "int_manager"
+#include "int_manager.dasm"
 ;#include "lib_STDIO.dasm
 :free_space_start
