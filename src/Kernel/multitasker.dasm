@@ -18,16 +18,18 @@
                 JSR multitasker_Init_Clock
         ADD J, 1
         SET PC, multitasker_Init_Loop
+		
+	SET PC, POP
             
     :multitasker_Init_Clock
         SET A, J
         JSR Clock_SetID
     SET A, 12
     JSR Clock_SetTicksec
-    SET A, 1
+	SET A, multitasker_Interrupt
+	JSR fn_request_handler_k
     JSR Clock_SetIntMsg
-    IAS multitasker_Interrupt
-    
+    SET PC, POP
 ;@name multitasker_Interrupt
 ;handles the main interrupt
 :multitasker_Interrupt
