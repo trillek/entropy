@@ -72,8 +72,16 @@
 	
 	;TODO, actually save the stack
 	
+	SET A, multitasker_Progs_0
+	SET PUSH, B
+	SET B, [multitasker_curProg]
+	MUL B, 0xB
+	ADD A, B
+	SET B, POP
+	
 	ADD [multitasker_curProg], 1
-	IFE [multitasker_curProg], 0 ;If there's no program loaded
+	ADD A, 0xB
+	IFE [A], 0 ;If there's no program loaded
 	    SUB PC, 5
 		
 	SET A, multitasker_Progs_0
