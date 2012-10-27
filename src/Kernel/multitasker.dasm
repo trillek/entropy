@@ -30,8 +30,60 @@
 	JSR fn_request_handler_k
     JSR Clock_SetIntMsg
     SET PC, POP
+	
+;@name multitasker_addProg
+;adds a program to the program tables
+;@params A the PC of the program's start
+;@returns A the program ID (needed to kill it)
+;@see thePalindrome	
+:multitasker_addProg	
+    SET PUSH, B
+	SET B, multitasker_Progs_0
+	SUB B, 0xB
+	
+	ADD B, 0xB
+	IFN [B], 0
+	    SUB PC, 3 ; B now points to an empty program slot
+		
+	SET [B], A
+	
+	SET A, B
+	SET B, POP
+	SET PC, POP
+	
+;@name multitasker_killProg
+;removes a program from the program list
+;@params A the program ID
+;@see thePalindrome
+:multitasker_killProg ; TODO add special case if trying to kill current program
+    MUL A, 0xB
+    ADD A, multitasker_Progs_0
+	SET [A], 0
+	ADD A, 1
+	SET [A], 0
+	ADD A, 1
+	SET [A], 0
+	ADD A, 1
+	SET [A], 0
+	ADD A, 1
+	SET [A], 0
+	ADD A, 1
+	SET [A], 0
+	ADD A, 1
+	SET [A], 0
+	ADD A, 1
+	SET [A], 0
+	ADD A, 1
+	SET [A], 0
+	ADD A, 1
+	SET [A], 0
+	ADD A, 1
+	SET [A], 0
+	SET PC, POP
+	
 ;@name multitasker_Interrupt
 ;handles the main interrupt
+;@see thePalindrome
 :multitasker_Interrupt
     SET PUSH, A
 	SET A, multitasker_Progs_0
