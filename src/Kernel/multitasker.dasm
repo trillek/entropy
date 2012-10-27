@@ -27,6 +27,7 @@
     SET A, 12
     JSR Clock_SetTicksec
 	SET A, multitasker_Interrupt
+	SET [current_process], 0
 	JSR fn_request_handler_k
     JSR Clock_SetIntMsg
     SET PC, POP
@@ -34,20 +35,33 @@
 ;@name multitasker_addProg
 ;adds a program to the program tables
 ;@params A the PC of the program's start
-;@returns A the program ID (needed to kill it)
+;@returns A the program ID (needed to kill it), -1 if there wasn't room
 ;@see thePalindrome	
-:multitasker_addProg	
+:multitasker_addProg ; TODO, load the program into memory
     SET PUSH, B
+	SET PUSH, C
+	SET C, 0
 	SET B, multitasker_Progs_0
 	SUB B, 0xB
 	
+	ADD C, 1
 	ADD B, 0xB
 	IFN [B], 0
-	    SUB PC, 3 ; B now points to an empty program slot
-		
+	    IFL 0xF, C
+	        SUB PC, 5 ; B now points to an empty program slot
+	
+    IFL 0xF, C
+		ADD PC, 4
+	SET A, -1
+	SET C, POP
+	SET B, POP
+	SET PC, POP
+	
+	
 	SET [B], A
 	
 	SET A, B
+	SET C, POP
 	SET B, POP
 	SET PC, POP
 	
@@ -122,7 +136,10 @@
 	SUB A, 9
 	SET [A], [B]
 	
-	;TODO, actually save the stack
+	ADD A, 10
+	ADD B, 1
+	SET [A], B ; SP has been saved for the new program
+	SUB B, 1
 	
 	SET A, multitasker_Progs_0
 	SET PUSH, B
@@ -166,6 +183,7 @@
 	SET [B], [A]
 	SUB A, 1
 	SET A, [A]
+	SET [current_process], [multitasker_curProg]
 		
 	:multitasker_Interrupt_End
     SET PC, POP
@@ -177,14 +195,19 @@
 ;How many ticks are left
 ;Registers (ABCIXYZJ)
 ;Where the stack is hiding
-:multitasker_Progs_0 dat 0
-    :multitasker_Progs_0Time dat 0
-    :multitasker_Progs_0A dat 0
-    :multitasker_Progs_0B dat 0
-    :multitasker_Progs_0C dat 0
-    :multitasker_Progs_0I dat 0
-    :multitasker_Progs_0X dat 0
-    :multitasker_Progs_0Y dat 0
-    :multitasker_Progs_0Z dat 0
-    :multitasker_Progs_0J dat 0
-    :multitasker_Progs_0Stack dat 0
+:multitasker_Progs_0 dat 0,0,0,0,0,0,0,0,0,0,0
+:multitasker_Progs_1 dat 0,0,0,0,0,0,0,0,0,0,0
+:multitasker_Progs_2 dat 0,0,0,0,0,0,0,0,0,0,0
+:multitasker_Progs_3 dat 0,0,0,0,0,0,0,0,0,0,0
+:multitasker_Progs_4 dat 0,0,0,0,0,0,0,0,0,0,0
+:multitasker_Progs_5 dat 0,0,0,0,0,0,0,0,0,0,0
+:multitasker_Progs_6 dat 0,0,0,0,0,0,0,0,0,0,0
+:multitasker_Progs_7 dat 0,0,0,0,0,0,0,0,0,0,0
+:multitasker_Progs_8 dat 0,0,0,0,0,0,0,0,0,0,0
+:multitasker_Progs_9 dat 0,0,0,0,0,0,0,0,0,0,0
+:multitasker_Progs_10 dat 0,0,0,0,0,0,0,0,0,0,0
+:multitasker_Progs_11 dat 0,0,0,0,0,0,0,0,0,0,0
+:multitasker_Progs_12 dat 0,0,0,0,0,0,0,0,0,0,0
+:multitasker_Progs_13 dat 0,0,0,0,0,0,0,0,0,0,0
+:multitasker_Progs_14 dat 0,0,0,0,0,0,0,0,0,0,0
+:multitasker_Progs_15 dat 0,0,0,0,0,0,0,0,0,0,0
