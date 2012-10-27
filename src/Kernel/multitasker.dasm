@@ -33,23 +33,98 @@
 ;@name multitasker_Interrupt
 ;handles the main interrupt
 :multitasker_Interrupt
-    IFN A, 1
-        RFI 0
-    IAS 0
-    IAS multitasker_Interrupt
-    RFI 0
-    
+    SET PUSH, A
+	SET A, multitasker_Progs_0
+	SET PUSH, B
+	SET B, [multitasker_curProg]
+	MUL B, 0xB
+	ADD A, B
+	SET B, POP ;at this point, A points to multitasker_Progs_(number of cur prog)
+	ADD A, 1
+	SUB [A], 1
+	IFN [A], 0
+	    SET PC, multitasker_Interrupt_End
+		
+	ADD A, 1
+	SET [A], POP
+	ADD A, 1
+	SET B, SP
+	ADD B, 4
+	SET [A], [B]
+	ADD A, 1
+	SUB B, 1
+	SET [A], [B]
+	ADD A, 1
+	SET [A], I
+	ADD A, 1
+	SUB B, 1
+	SET [A], [B]
+	ADD A, 1
+	SET [A], Y
+	ADD A, 1
+	SET [A], Z
+	ADD A, 1
+	SET [A], J
+	
+	ADD B, 6 ;B now points to the location in the Stack where the old program was running
+	SUB A, 9
+	SET [A], [B]
+	
+	;TODO, actually save the stack
+	
+	ADD [multitasker_curProg], 1
+	IFE [multitasker_curProg], 0 ;If there's no program loaded
+	    SUB PC, 5
+		
+	SET A, multitasker_Progs_0
+	SET PUSH, B
+	SET B, [multitasker_curProg]
+	MUL B, 0xB
+	ADD A, B
+	SET B, POP
+	SET [B], [A] ;The stack will now return to the new program
+	ADD A, 1
+	SET [A], 14 ; each program gets 14 ticks
+	ADD A, 1 ; A now points to the A register of the new program
+	SUB B, 2 ; B now points to the stack where the B register is kept
+	SUB B, 2 ; B now points to the stack where the X register is kept
+	ADD A, 7 ; A now points to the J register of the new program
+	SET J, [A]
+	SUB A, 1
+	SET Z, [A]
+	SUB A, 1
+	SET Y, [A]
+	SUB A, 1
+	SET [B], [A] ;setting X
+	SUB A, 1
+	ADD B, 1 ; B now points to the stack where the C register is kept
+	SET I, [A]
+	SUB A, 1
+	SET [B], [A] ;setting C
+	SUB A, 1
+	ADD B, 1
+	SET [B], [A]
+	SUB A, 1
+	SET A, [A]
+		
+	:multitasker_Interrupt_End
+    SET PC, POP
+	
+:multitasker_curProg dat 0
+
 ;Definition of datastructure
 ;Current PC
+;How many ticks are left
 ;Registers (ABCIXYZJ)
 ;Where the stack is hiding
-:multitasker_Progs_0
-    :multitasker_Progs_0A
-    :multitasker_Progs_0B
-    :multitasker_Progs_0C
-    :multitasker_Progs_0I
-    :multitasker_Progs_0X
-    :multitasker_Progs_0Y
-    :multitasker_Progs_0Z
-    :multitasker_Progs_0J
-    :multitasker_Progs_0Stack
+:multitasker_Progs_0 dat 0
+    :multitasker_Progs_0Time dat 0
+    :multitasker_Progs_0A dat 0
+    :multitasker_Progs_0B dat 0
+    :multitasker_Progs_0C dat 0
+    :multitasker_Progs_0I dat 0
+    :multitasker_Progs_0X dat 0
+    :multitasker_Progs_0Y dat 0
+    :multitasker_Progs_0Z dat 0
+    :multitasker_Progs_0J dat 0
+    :multitasker_Progs_0Stack dat 0

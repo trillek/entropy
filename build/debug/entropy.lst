@@ -1,23 +1,23 @@
-../src/kernel/main.dasm (line 11):  [0x0000] 7C20 FFFB       JSR fn_init_MM
-../src/kernel/main.dasm (line 12):  [0x0002] 7C20 0247       JSR fn_init_IM
+../src/kernel/main.dasm (line 11):  [0x0000] 7C20 FFF4       JSR fn_init_MM
+../src/kernel/main.dasm (line 12):  [0x0002] 7C20 026D       JSR fn_init_IM
 ../src/kernel/main.dasm (line 13):  [0x0004] 7C20 01F8       JSR multitasker_Init
 mem_manager.dasm        (line 49):  [0x0006]               #define max_process_num 64
 mem_manager.dasm        (line 50):  [0x0006]               #define err_unknown 0x100
 mem_manager.dasm        (line 51):  [0x0006]               #define err_no_permission 0x101
 mem_manager.dasm        (line 58):  [0x0006]               :fn_init_MM
 mem_manager.dasm        (line 59):  [0x0006] 0301            set push, a
-mem_manager.dasm        (line 60):  [0x0007] 7C01 0558       set a, free_space_start
+mem_manager.dasm        (line 60):  [0x0007] 7C01 0589       set a, free_space_start
 mem_manager.dasm        (line 61):  [0x0009] A80D            shr a, 9
 mem_manager.dasm        (line 62):  [0x000A] 8802            add a, 1
-mem_manager.dasm        (line 63):  [0x000B] 83C1 0137       set [page_header_start + 127], -1
-mem_manager.dasm        (line 64):  [0x000D] 7C20 0002       jsr fn_request_memory
+mem_manager.dasm        (line 63):  [0x000B] 83C1 012C       set [page_header_start + 127], -1
+mem_manager.dasm        (line 64):  [0x000D] 7C20 FFF8       jsr fn_request_memory
 mem_manager.dasm        (line 65):  [0x000F] 6001            set a, pop
 mem_manager.dasm        (line 66):  [0x0010] 6381            set pc, pop
 mem_manager.dasm        (line 70):  [0x0011]               :fn_request_memory
 mem_manager.dasm        (line 71):  [0x0011] 0701            set push, b
 mem_manager.dasm        (line 72):  [0x0012] 0B01            set push, c
 mem_manager.dasm        (line 73):  [0x0013] 7D80 0001       iaq 1
-mem_manager.dasm        (line 74):  [0x0015] 7C21 00B8       set b, page_header_start
+mem_manager.dasm        (line 74):  [0x0015] 7C21 00AD       set b, page_header_start
 mem_manager.dasm        (line 75):  [0x0017] 8441            set c, 0
 mem_manager.dasm        (line 76):  [0x0018]               :.loop_a
 mem_manager.dasm        (line 77):  [0x0018] 8532            ife [b], 0
@@ -25,11 +25,11 @@ mem_manager.dasm        (line 78):  [0x0019] 8842            add c, 1
 mem_manager.dasm        (line 79):  [0x001A] 8533            ifn [b], 0
 mem_manager.dasm        (line 80):  [0x001B] 8441            set c, 0
 mem_manager.dasm        (line 81):  [0x001C] 0052            ife c, a
-mem_manager.dasm        (line 82):  [0x001D] CF81            set pc, .found_space
-mem_manager.dasm        (line 83):  [0x001E] 7C32 0137       ife b, page_header_start + 127
-mem_manager.dasm        (line 84):  [0x0020] 7F81 002B       set pc, .no_space
+mem_manager.dasm        (line 82):  [0x001D] A781            set pc, .found_space
+mem_manager.dasm        (line 83):  [0x001E] 7C32 012C       ife b, page_header_start + 127
+mem_manager.dasm        (line 84):  [0x0020] 7F81 0020       set pc, .no_space
 mem_manager.dasm        (line 85):  [0x0022] 8822            add b, 1
-mem_manager.dasm        (line 86):  [0x0023] A781            set pc, .loop_a
+mem_manager.dasm        (line 86):  [0x0023] 7F81 FFFE       set pc, .loop_a
 mem_manager.dasm        (line 87):  [0x0024]               :.found_space
 mem_manager.dasm        (line 88):  [0x0024] 0441            set c, b
 mem_manager.dasm        (line 89):  [0x0025] 0043            sub c, a
@@ -37,190 +37,190 @@ mem_manager.dasm        (line 90):  [0x0026] 8842            add c, 1
 mem_manager.dasm        (line 91):  [0x0027] 8121            set [b], -1
 mem_manager.dasm        (line 92):  [0x0028]               :.loop_b
 mem_manager.dasm        (line 93):  [0x0028] 0832            ife b, c
-mem_manager.dasm        (line 94):  [0x0029] FB81            set pc, .do_header
+mem_manager.dasm        (line 94):  [0x0029] D381            set pc, .do_header
 mem_manager.dasm        (line 95):  [0x002A] 0621 FFFF       set [b + -1], b
-mem_manager.dasm        (line 96):  [0x002C] 7E23 00B8 FFFF  sub [b + -1], page_header_start
+mem_manager.dasm        (line 96):  [0x002C] 7E23 00AD FFFF  sub [b + -1], page_header_start
 mem_manager.dasm        (line 97):  [0x002F] 8823            sub b, 1
-mem_manager.dasm        (line 98):  [0x0030] D781            set pc, .loop_b
+mem_manager.dasm        (line 98):  [0x0030] AF81            set pc, .loop_b
 mem_manager.dasm        (line 99):  [0x0031]               :.do_header
 mem_manager.dasm        (line 100): [0x0031] 0401            set a, b
-mem_manager.dasm        (line 101): [0x0032] 7C03 00B8       sub a, page_header_start
-mem_manager.dasm        (line 102): [0x0034] 7821 0178       set b, [current_process]
-mem_manager.dasm        (line 103): [0x0036] 7C22 0138       add b, process_first_pages_start
+mem_manager.dasm        (line 101): [0x0032] 7C03 00AD       sub a, page_header_start
+mem_manager.dasm        (line 102): [0x0034] 7821 016D       set b, [current_process]
+mem_manager.dasm        (line 103): [0x0036] 7C22 012D       add b, process_first_pages_start
 mem_manager.dasm        (line 104): [0x0038]               :.loop_c
 mem_manager.dasm        (line 105): [0x0038] 8132            ife [b], -1
-mem_manager.dasm        (line 106): [0x0039] 7F81 002C       set pc, .found_end
+mem_manager.dasm        (line 106): [0x0039] 7F81 0021       set pc, .found_end
 mem_manager.dasm        (line 107): [0x003B] 2421            set b, [b]
-mem_manager.dasm        (line 108): [0x003C] 7C22 00B8       add b, page_header_start
-mem_manager.dasm        (line 109): [0x003E] 7F81 0024       set pc, .loop_c
-mem_manager.dasm        (line 110): [0x0040]               :.found_end
-mem_manager.dasm        (line 111): [0x0040] 0121            set [b], a
-mem_manager.dasm        (line 112): [0x0041] 8B82            add pc, 1
-mem_manager.dasm        (line 113): [0x0042]               :.no_space
-mem_manager.dasm        (line 114): [0x0042] 8001            set a, -1
-mem_manager.dasm        (line 115): [0x0043] 7D80 0000       iaq 0
-mem_manager.dasm        (line 116): [0x0045] 6041            set c, pop
-mem_manager.dasm        (line 117): [0x0046] 6021            set b, pop
-mem_manager.dasm        (line 118): [0x0047] 6381            set pc, pop
-mem_manager.dasm        (line 120): [0x0048]               :fn_request_page
-mem_manager.dasm        (line 121): [0x0048] 7D80 0001       iaq 1
-mem_manager.dasm        (line 122): [0x004A] 7C01 00B8       set a, page_header_start
-mem_manager.dasm        (line 123): [0x004C]               :.loop_a
-mem_manager.dasm        (line 124): [0x004C] 8512            ife [a], 0
-mem_manager.dasm        (line 125): [0x004D] 7F81 0040       set pc, .found_space
-mem_manager.dasm        (line 126): [0x004F] 7C12 0137       ife a, page_header_start + 127
-mem_manager.dasm        (line 127): [0x0051] 7F81 003D       set pc, .no_space
-mem_manager.dasm        (line 128): [0x0053] 8802            add a, 1
-mem_manager.dasm        (line 129): [0x0054] 7F81 0034       set pc, .loop_a
-mem_manager.dasm        (line 130): [0x0056]               :.no_space
-mem_manager.dasm        (line 131): [0x0056] 8001            set a, -1
-mem_manager.dasm        (line 132): [0x0057] 7D80 0000       iaq 0
-mem_manager.dasm        (line 133): [0x0059] 6381            set pc, pop
-mem_manager.dasm        (line 134): [0x005A]               :.found_space
-mem_manager.dasm        (line 135): [0x005A] 0701            set push, b
-mem_manager.dasm        (line 136): [0x005B] 8101            set [a], -1
-mem_manager.dasm        (line 137): [0x005C] 7C03 00B8       sub a, page_header_start
-mem_manager.dasm        (line 138): [0x005E] 7821 0178       set b, [current_process]
-mem_manager.dasm        (line 139): [0x0060] 7C22 0138       add b, process_first_pages_start
-mem_manager.dasm        (line 140): [0x0062]               :.loop_b
-mem_manager.dasm        (line 141): [0x0062] 8132            ife [b], -1
-mem_manager.dasm        (line 142): [0x0063] 7F81 004E       set pc, .found_end
-mem_manager.dasm        (line 143): [0x0065] 2421            set b, [b]
-mem_manager.dasm        (line 144): [0x0066] 7C22 00B8       add b, page_header_start
-mem_manager.dasm        (line 145): [0x0068] 7F81 0046       set pc, .loop_b
-mem_manager.dasm        (line 146): [0x006A]               :.found_end
-mem_manager.dasm        (line 147): [0x006A] 0121            set [b], a
-mem_manager.dasm        (line 148): [0x006B] 7D80 0000       iaq 0
-mem_manager.dasm        (line 149): [0x006D] 6021            set b, pop
-mem_manager.dasm        (line 150): [0x006E] 6381            set pc, pop
-mem_manager.dasm        (line 153): [0x006F]               :fn_clear_process
-mem_manager.dasm        (line 154): [0x006F] 0701            set push, b
-mem_manager.dasm        (line 155): [0x0070] 7D80 0001       iaq 1
-mem_manager.dasm        (line 156): [0x0072] 4001 0138       set a, [a + process_first_pages_start]
-mem_manager.dasm        (line 157): [0x0074]               :.loop_a
-mem_manager.dasm        (line 158): [0x0074] 7C02 00B8       add a, page_header_start
-mem_manager.dasm        (line 159): [0x0076] 8112            ife [a], -1
-mem_manager.dasm        (line 160): [0x0077] 7F81 005E       set pc, .done
-mem_manager.dasm        (line 161): [0x0079] 2021            set b, [a]
-mem_manager.dasm        (line 162): [0x007A] 8501            set [a], 0
-mem_manager.dasm        (line 163): [0x007B] 0401            set a, b
-mem_manager.dasm        (line 164): [0x007C] 7F81 0056       set pc, .loop_a
-mem_manager.dasm        (line 165): [0x007E]               :.done
-mem_manager.dasm        (line 166): [0x007E] 8501            set [a], 0
-mem_manager.dasm        (line 167): [0x007F] 7D80 0000       iaq 0
-mem_manager.dasm        (line 168): [0x0081] 6021            set b, pop
-mem_manager.dasm        (line 169): [0x0082] 6381            set pc, pop
-mem_manager.dasm        (line 172): [0x0083]               :fn_free_page
-mem_manager.dasm        (line 173): [0x0083] 0701            set push, b
-mem_manager.dasm        (line 174): [0x0084] 7D80 0001       iaq 1
-mem_manager.dasm        (line 175): [0x0086] 7821 0178       set b, [current_process]
-mem_manager.dasm        (line 176): [0x0088] 982F            shl b, 5
-mem_manager.dasm        (line 177): [0x0089] 4421 0138       set b, [b + process_first_pages_start]
-mem_manager.dasm        (line 178): [0x008B]               :.loop_a
-mem_manager.dasm        (line 179): [0x008B] 7C22 00B8       add b, page_header_start
-mem_manager.dasm        (line 180): [0x008D] 0132            ife [b], a
-mem_manager.dasm        (line 181): [0x008E] 7F81 0073       set pc, .found_it
-mem_manager.dasm        (line 182): [0x0090] 8132            ife [b], -1
-mem_manager.dasm        (line 183): [0x0091] 7F81 007A       set pc, .not_owned
-mem_manager.dasm        (line 184): [0x0093] 2421            set b, [b]
-mem_manager.dasm        (line 185): [0x0094] 7F81 006A       set pc, .loop_a
-mem_manager.dasm        (line 186): [0x0096]               :.found_it
-mem_manager.dasm        (line 187): [0x0096] 7C02 00B8       add a, page_header_start
-mem_manager.dasm        (line 188): [0x0098] 2121            set [b], [a]
-mem_manager.dasm        (line 189): [0x0099] 8501            set [a], 0
-mem_manager.dasm        (line 190): [0x009A] 8401            set a, 0
-mem_manager.dasm        (line 191): [0x009B] 7D80 0000       iaq 0
-mem_manager.dasm        (line 192): [0x009D] 6021            set b, pop
-mem_manager.dasm        (line 193): [0x009E] 6381            set pc, pop
-mem_manager.dasm        (line 194): [0x009F]               :.not_owned
-mem_manager.dasm        (line 196): [0x009F] 7C01 0101       set a, err_no_permission
-mem_manager.dasm        (line 197): [0x00A1] 7D80 0000       iaq 0
-mem_manager.dasm        (line 198): [0x00A3] 6021            set b, pop
-mem_manager.dasm        (line 199): [0x00A4] 6381            set pc, pop
-mem_manager.dasm        (line 202): [0x00A5]               :fn_clear_page
-mem_manager.dasm        (line 203): [0x00A5] 1B01            set push, i
-mem_manager.dasm        (line 204): [0x00A6] 1F01            set push, j
-mem_manager.dasm        (line 205): [0x00A7] 7D80 0001       iaq 1
-mem_manager.dasm        (line 206): [0x00A9] A80F            shl a, 9
-mem_manager.dasm        (line 207): [0x00AA] 00C1            set i, a
-mem_manager.dasm        (line 208): [0x00AB] 7C02 0200       add a, 512
-mem_manager.dasm        (line 209): [0x00AD]               :.loop_a
-mem_manager.dasm        (line 210): [0x00AD] 85DE            sti [i], 0
-mem_manager.dasm        (line 211): [0x00AE] 85DE            sti [i], 0
-mem_manager.dasm        (line 212): [0x00AF] 85DE            sti [i], 0
-mem_manager.dasm        (line 213): [0x00B0] 85DE            sti [i], 0
-mem_manager.dasm        (line 214): [0x00B1] 85DE            sti [i], 0
-mem_manager.dasm        (line 215): [0x00B2] 85DE            sti [i], 0
-mem_manager.dasm        (line 216): [0x00B3] 85DE            sti [i], 0
-mem_manager.dasm        (line 217): [0x00B4] 85DE            sti [i], 0
-mem_manager.dasm        (line 218): [0x00B5] 85DE            sti [i], 0
-mem_manager.dasm        (line 219): [0x00B6] 85DE            sti [i], 0
-mem_manager.dasm        (line 220): [0x00B7] 85DE            sti [i], 0
-mem_manager.dasm        (line 221): [0x00B8] 85DE            sti [i], 0
-mem_manager.dasm        (line 222): [0x00B9] 85DE            sti [i], 0
-mem_manager.dasm        (line 223): [0x00BA] 85DE            sti [i], 0
-mem_manager.dasm        (line 224): [0x00BB] 85DE            sti [i], 0
-mem_manager.dasm        (line 225): [0x00BC] 85DE            sti [i], 0
-mem_manager.dasm        (line 226): [0x00BD] 00D3            ifn i, a
-mem_manager.dasm        (line 227): [0x00BE] 7F81 0085       set pc, .loop_a
-mem_manager.dasm        (line 228): [0x00C0] 7D80 0000       iaq 0
-mem_manager.dasm        (line 229): [0x00C2] 60E1            set j, pop
-mem_manager.dasm        (line 230): [0x00C3] 60C1            set i, pop
-mem_manager.dasm        (line 231): [0x00C4] 6381            set pc, pop
-mem_manager.dasm        (line 234): [0x00C5]               :fn_copy_page
-mem_manager.dasm        (line 235): [0x00C5] 1B01            set push, i
-mem_manager.dasm        (line 236): [0x00C6] 1F01            set push, j
-mem_manager.dasm        (line 237): [0x00C7] 7D80 0001       iaq 1
-mem_manager.dasm        (line 238): [0x00C9] A80F            shl a, 9
-mem_manager.dasm        (line 239): [0x00CA] A82F            shl b, 9
-mem_manager.dasm        (line 240): [0x00CB] 00C1            set i, a
-mem_manager.dasm        (line 241): [0x00CC] 04E1            set j, b
-mem_manager.dasm        (line 242): [0x00CD] 7C02 0200       add a, 512
-mem_manager.dasm        (line 243): [0x00CF]               :.loop_a
-mem_manager.dasm        (line 244): [0x00CF] 3DDE            sti [i], [j]
-mem_manager.dasm        (line 245): [0x00D0] 3DDE            sti [i], [j]
-mem_manager.dasm        (line 246): [0x00D1] 3DDE            sti [i], [j]
-mem_manager.dasm        (line 247): [0x00D2] 3DDE            sti [i], [j]
-mem_manager.dasm        (line 248): [0x00D3] 3DDE            sti [i], [j]
-mem_manager.dasm        (line 249): [0x00D4] 3DDE            sti [i], [j]
-mem_manager.dasm        (line 250): [0x00D5] 3DDE            sti [i], [j]
-mem_manager.dasm        (line 251): [0x00D6] 3DDE            sti [i], [j]
-mem_manager.dasm        (line 252): [0x00D7] 3DDE            sti [i], [j]
-mem_manager.dasm        (line 253): [0x00D8] 3DDE            sti [i], [j]
-mem_manager.dasm        (line 254): [0x00D9] 3DDE            sti [i], [j]
-mem_manager.dasm        (line 255): [0x00DA] 3DDE            sti [i], [j]
-mem_manager.dasm        (line 256): [0x00DB] 3DDE            sti [i], [j]
-mem_manager.dasm        (line 257): [0x00DC] 3DDE            sti [i], [j]
-mem_manager.dasm        (line 258): [0x00DD] 3DDE            sti [i], [j]
-mem_manager.dasm        (line 259): [0x00DE] 3DDE            sti [i], [j]
-mem_manager.dasm        (line 260): [0x00DF] 00D3            ifn i, a
-mem_manager.dasm        (line 261): [0x00E0] 7F81 00A0       set pc, .loop_a
-mem_manager.dasm        (line 262): [0x00E2] 7D80 0000       iaq 0
-mem_manager.dasm        (line 263): [0x00E4] 60E1            set j, pop
-mem_manager.dasm        (line 264): [0x00E5] 60C1            set i, pop
-mem_manager.dasm        (line 265): [0x00E6] 6381            set pc, pop
-mem_manager.dasm        (line 268): [0x00E7]               :page_header_start
-mem_manager.dasm        (line 269): [0x00E7] 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000#reserve 128
-mem_manager.dasm        (line 271): [0x0167]               :process_first_pages_start
-mem_manager.dasm        (line 272): [0x0167] 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000#reserve 64
-mem_manager.dasm        (line 274): [0x01A7]               :current_process
-mem_manager.dasm        (line 275): [0x01A7]                 .dat 0x0000
-mem_manager.dasm        (line 275): [0x01A7]                      0000
+mem_manager.dasm        (line 108): [0x003C] 7C22 00AD       add b, page_header_start
+mem_manager.dasm        (line 109): [0x003E] EF81            set pc, .loop_c
+mem_manager.dasm        (line 110): [0x003F]               :.found_end
+mem_manager.dasm        (line 111): [0x003F] 0121            set [b], a
+mem_manager.dasm        (line 112): [0x0040] 8B82            add pc, 1
+mem_manager.dasm        (line 113): [0x0041]               :.no_space
+mem_manager.dasm        (line 114): [0x0041] 8001            set a, -1
+mem_manager.dasm        (line 115): [0x0042] 7D80 0000       iaq 0
+mem_manager.dasm        (line 116): [0x0044] 6041            set c, pop
+mem_manager.dasm        (line 117): [0x0045] 6021            set b, pop
+mem_manager.dasm        (line 118): [0x0046] 6381            set pc, pop
+mem_manager.dasm        (line 120): [0x0047]               :fn_request_page
+mem_manager.dasm        (line 121): [0x0047] 7D80 0001       iaq 1
+mem_manager.dasm        (line 122): [0x0049] 7C01 00AD       set a, page_header_start
+mem_manager.dasm        (line 123): [0x004B]               :.loop_a
+mem_manager.dasm        (line 124): [0x004B] 8512            ife [a], 0
+mem_manager.dasm        (line 125): [0x004C] 7F81 0035       set pc, .found_space
+mem_manager.dasm        (line 126): [0x004E] 7C12 012C       ife a, page_header_start + 127
+mem_manager.dasm        (line 127): [0x0050] 7F81 0032       set pc, .no_space
+mem_manager.dasm        (line 128): [0x0052] 8802            add a, 1
+mem_manager.dasm        (line 129): [0x0053] 7F81 0029       set pc, .loop_a
+mem_manager.dasm        (line 130): [0x0055]               :.no_space
+mem_manager.dasm        (line 131): [0x0055] 8001            set a, -1
+mem_manager.dasm        (line 132): [0x0056] 7D80 0000       iaq 0
+mem_manager.dasm        (line 133): [0x0058] 6381            set pc, pop
+mem_manager.dasm        (line 134): [0x0059]               :.found_space
+mem_manager.dasm        (line 135): [0x0059] 0701            set push, b
+mem_manager.dasm        (line 136): [0x005A] 8101            set [a], -1
+mem_manager.dasm        (line 137): [0x005B] 7C03 00AD       sub a, page_header_start
+mem_manager.dasm        (line 138): [0x005D] 7821 016D       set b, [current_process]
+mem_manager.dasm        (line 139): [0x005F] 7C22 012D       add b, process_first_pages_start
+mem_manager.dasm        (line 140): [0x0061]               :.loop_b
+mem_manager.dasm        (line 141): [0x0061] 8132            ife [b], -1
+mem_manager.dasm        (line 142): [0x0062] 7F81 0043       set pc, .found_end
+mem_manager.dasm        (line 143): [0x0064] 2421            set b, [b]
+mem_manager.dasm        (line 144): [0x0065] 7C22 00AD       add b, page_header_start
+mem_manager.dasm        (line 145): [0x0067] 7F81 003B       set pc, .loop_b
+mem_manager.dasm        (line 146): [0x0069]               :.found_end
+mem_manager.dasm        (line 147): [0x0069] 0121            set [b], a
+mem_manager.dasm        (line 148): [0x006A] 7D80 0000       iaq 0
+mem_manager.dasm        (line 149): [0x006C] 6021            set b, pop
+mem_manager.dasm        (line 150): [0x006D] 6381            set pc, pop
+mem_manager.dasm        (line 153): [0x006E]               :fn_clear_process
+mem_manager.dasm        (line 154): [0x006E] 0701            set push, b
+mem_manager.dasm        (line 155): [0x006F] 7D80 0001       iaq 1
+mem_manager.dasm        (line 156): [0x0071] 4001 012D       set a, [a + process_first_pages_start]
+mem_manager.dasm        (line 157): [0x0073]               :.loop_a
+mem_manager.dasm        (line 158): [0x0073] 7C02 00AD       add a, page_header_start
+mem_manager.dasm        (line 159): [0x0075] 8112            ife [a], -1
+mem_manager.dasm        (line 160): [0x0076] 7F81 0053       set pc, .done
+mem_manager.dasm        (line 161): [0x0078] 2021            set b, [a]
+mem_manager.dasm        (line 162): [0x0079] 8501            set [a], 0
+mem_manager.dasm        (line 163): [0x007A] 0401            set a, b
+mem_manager.dasm        (line 164): [0x007B] 7F81 004B       set pc, .loop_a
+mem_manager.dasm        (line 165): [0x007D]               :.done
+mem_manager.dasm        (line 166): [0x007D] 8501            set [a], 0
+mem_manager.dasm        (line 167): [0x007E] 7D80 0000       iaq 0
+mem_manager.dasm        (line 168): [0x0080] 6021            set b, pop
+mem_manager.dasm        (line 169): [0x0081] 6381            set pc, pop
+mem_manager.dasm        (line 172): [0x0082]               :fn_free_page
+mem_manager.dasm        (line 173): [0x0082] 0701            set push, b
+mem_manager.dasm        (line 174): [0x0083] 7D80 0001       iaq 1
+mem_manager.dasm        (line 175): [0x0085] 7821 016D       set b, [current_process]
+mem_manager.dasm        (line 176): [0x0087] 982F            shl b, 5
+mem_manager.dasm        (line 177): [0x0088] 4421 012D       set b, [b + process_first_pages_start]
+mem_manager.dasm        (line 178): [0x008A]               :.loop_a
+mem_manager.dasm        (line 179): [0x008A] 7C22 00AD       add b, page_header_start
+mem_manager.dasm        (line 180): [0x008C] 0132            ife [b], a
+mem_manager.dasm        (line 181): [0x008D] 7F81 0068       set pc, .found_it
+mem_manager.dasm        (line 182): [0x008F] 8132            ife [b], -1
+mem_manager.dasm        (line 183): [0x0090] 7F81 006F       set pc, .not_owned
+mem_manager.dasm        (line 184): [0x0092] 2421            set b, [b]
+mem_manager.dasm        (line 185): [0x0093] 7F81 005F       set pc, .loop_a
+mem_manager.dasm        (line 186): [0x0095]               :.found_it
+mem_manager.dasm        (line 187): [0x0095] 7C02 00AD       add a, page_header_start
+mem_manager.dasm        (line 188): [0x0097] 2121            set [b], [a]
+mem_manager.dasm        (line 189): [0x0098] 8501            set [a], 0
+mem_manager.dasm        (line 190): [0x0099] 8401            set a, 0
+mem_manager.dasm        (line 191): [0x009A] 7D80 0000       iaq 0
+mem_manager.dasm        (line 192): [0x009C] 6021            set b, pop
+mem_manager.dasm        (line 193): [0x009D] 6381            set pc, pop
+mem_manager.dasm        (line 194): [0x009E]               :.not_owned
+mem_manager.dasm        (line 196): [0x009E] 7C01 0101       set a, err_no_permission
+mem_manager.dasm        (line 197): [0x00A0] 7D80 0000       iaq 0
+mem_manager.dasm        (line 198): [0x00A2] 6021            set b, pop
+mem_manager.dasm        (line 199): [0x00A3] 6381            set pc, pop
+mem_manager.dasm        (line 202): [0x00A4]               :fn_clear_page
+mem_manager.dasm        (line 203): [0x00A4] 1B01            set push, i
+mem_manager.dasm        (line 204): [0x00A5] 1F01            set push, j
+mem_manager.dasm        (line 205): [0x00A6] 7D80 0001       iaq 1
+mem_manager.dasm        (line 206): [0x00A8] A80F            shl a, 9
+mem_manager.dasm        (line 207): [0x00A9] 00C1            set i, a
+mem_manager.dasm        (line 208): [0x00AA] 7C02 0200       add a, 512
+mem_manager.dasm        (line 209): [0x00AC]               :.loop_a
+mem_manager.dasm        (line 210): [0x00AC] 85DE            sti [i], 0
+mem_manager.dasm        (line 211): [0x00AD] 85DE            sti [i], 0
+mem_manager.dasm        (line 212): [0x00AE] 85DE            sti [i], 0
+mem_manager.dasm        (line 213): [0x00AF] 85DE            sti [i], 0
+mem_manager.dasm        (line 214): [0x00B0] 85DE            sti [i], 0
+mem_manager.dasm        (line 215): [0x00B1] 85DE            sti [i], 0
+mem_manager.dasm        (line 216): [0x00B2] 85DE            sti [i], 0
+mem_manager.dasm        (line 217): [0x00B3] 85DE            sti [i], 0
+mem_manager.dasm        (line 218): [0x00B4] 85DE            sti [i], 0
+mem_manager.dasm        (line 219): [0x00B5] 85DE            sti [i], 0
+mem_manager.dasm        (line 220): [0x00B6] 85DE            sti [i], 0
+mem_manager.dasm        (line 221): [0x00B7] 85DE            sti [i], 0
+mem_manager.dasm        (line 222): [0x00B8] 85DE            sti [i], 0
+mem_manager.dasm        (line 223): [0x00B9] 85DE            sti [i], 0
+mem_manager.dasm        (line 224): [0x00BA] 85DE            sti [i], 0
+mem_manager.dasm        (line 225): [0x00BB] 85DE            sti [i], 0
+mem_manager.dasm        (line 226): [0x00BC] 00D3            ifn i, a
+mem_manager.dasm        (line 227): [0x00BD] 7F81 007A       set pc, .loop_a
+mem_manager.dasm        (line 228): [0x00BF] 7D80 0000       iaq 0
+mem_manager.dasm        (line 229): [0x00C1] 60E1            set j, pop
+mem_manager.dasm        (line 230): [0x00C2] 60C1            set i, pop
+mem_manager.dasm        (line 231): [0x00C3] 6381            set pc, pop
+mem_manager.dasm        (line 234): [0x00C4]               :fn_copy_page
+mem_manager.dasm        (line 235): [0x00C4] 1B01            set push, i
+mem_manager.dasm        (line 236): [0x00C5] 1F01            set push, j
+mem_manager.dasm        (line 237): [0x00C6] 7D80 0001       iaq 1
+mem_manager.dasm        (line 238): [0x00C8] A80F            shl a, 9
+mem_manager.dasm        (line 239): [0x00C9] A82F            shl b, 9
+mem_manager.dasm        (line 240): [0x00CA] 00C1            set i, a
+mem_manager.dasm        (line 241): [0x00CB] 04E1            set j, b
+mem_manager.dasm        (line 242): [0x00CC] 7C02 0200       add a, 512
+mem_manager.dasm        (line 243): [0x00CE]               :.loop_a
+mem_manager.dasm        (line 244): [0x00CE] 3DDE            sti [i], [j]
+mem_manager.dasm        (line 245): [0x00CF] 3DDE            sti [i], [j]
+mem_manager.dasm        (line 246): [0x00D0] 3DDE            sti [i], [j]
+mem_manager.dasm        (line 247): [0x00D1] 3DDE            sti [i], [j]
+mem_manager.dasm        (line 248): [0x00D2] 3DDE            sti [i], [j]
+mem_manager.dasm        (line 249): [0x00D3] 3DDE            sti [i], [j]
+mem_manager.dasm        (line 250): [0x00D4] 3DDE            sti [i], [j]
+mem_manager.dasm        (line 251): [0x00D5] 3DDE            sti [i], [j]
+mem_manager.dasm        (line 252): [0x00D6] 3DDE            sti [i], [j]
+mem_manager.dasm        (line 253): [0x00D7] 3DDE            sti [i], [j]
+mem_manager.dasm        (line 254): [0x00D8] 3DDE            sti [i], [j]
+mem_manager.dasm        (line 255): [0x00D9] 3DDE            sti [i], [j]
+mem_manager.dasm        (line 256): [0x00DA] 3DDE            sti [i], [j]
+mem_manager.dasm        (line 257): [0x00DB] 3DDE            sti [i], [j]
+mem_manager.dasm        (line 258): [0x00DC] 3DDE            sti [i], [j]
+mem_manager.dasm        (line 259): [0x00DD] 3DDE            sti [i], [j]
+mem_manager.dasm        (line 260): [0x00DE] 00D3            ifn i, a
+mem_manager.dasm        (line 261): [0x00DF] 7F81 0095       set pc, .loop_a
+mem_manager.dasm        (line 262): [0x00E1] 7D80 0000       iaq 0
+mem_manager.dasm        (line 263): [0x00E3] 60E1            set j, pop
+mem_manager.dasm        (line 264): [0x00E4] 60C1            set i, pop
+mem_manager.dasm        (line 265): [0x00E5] 6381            set pc, pop
+mem_manager.dasm        (line 268): [0x00E6]               :page_header_start
+mem_manager.dasm        (line 269): [0x00E6] 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000#reserve 128
+mem_manager.dasm        (line 271): [0x0166]               :process_first_pages_start
+mem_manager.dasm        (line 272): [0x0166] 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000#reserve 64
+mem_manager.dasm        (line 274): [0x01A6]               :current_process
+mem_manager.dasm        (line 275): [0x01A6]                 .dat 0x0000
+mem_manager.dasm        (line 275): [0x01A6]                      0000
 lib_clock.dasm          (line 10):  [0x01DA]               Clock_SetID:
-lib_clock.dasm          (line 11):  [0x01DA] 03C1 01F0       SET [Clock_ID], A
+lib_clock.dasm          (line 11):  [0x01DA] 03C1 01F1       SET [Clock_ID], A
 lib_clock.dasm          (line 12):  [0x01DC] 6381            SET PC, POP
 lib_clock.dasm          (line 15):  [0x01DD]               Clock_SetTicksec:
 lib_clock.dasm          (line 16):  [0x01DD] 0701            SET PUSH, B
 lib_clock.dasm          (line 17):  [0x01DE] 0021            SET B, A
 lib_clock.dasm          (line 18):  [0x01DF] 8401            SET A, CLOCK_SETTICK
-lib_clock.dasm          (line 19):  [0x01E0] 7A40 01F0       HWI [Clock_ID]
+lib_clock.dasm          (line 19):  [0x01E0] 7A40 01F1       HWI [Clock_ID]
 lib_clock.dasm          (line 20):  [0x01E2] 0401            SET A, B
 lib_clock.dasm          (line 21):  [0x01E3] 6021            SET B, POP
 lib_clock.dasm          (line 22):  [0x01E4] 6381            SET PC, POP
 lib_clock.dasm          (line 25):  [0x01E5]               Clock_GetTicksec:
 lib_clock.dasm          (line 26):  [0x01E5] 0B01            SET PUSH, C
 lib_clock.dasm          (line 27):  [0x01E6] 8801            SET A, CLOCK_GETTICK
-lib_clock.dasm          (line 28):  [0x01E7] 7A40 01F0       HWI [Clock_ID]
+lib_clock.dasm          (line 28):  [0x01E7] 7A40 01F1       HWI [Clock_ID]
 lib_clock.dasm          (line 29):  [0x01E9] 0801            SET A, C
 lib_clock.dasm          (line 30):  [0x01EA] 6041            SET C, POP
 lib_clock.dasm          (line 31):  [0x01EB] 6381            SET PC, POP
@@ -228,7 +228,7 @@ lib_clock.dasm          (line 34):  [0x01EC]               Clock_SetIntMsg:
 lib_clock.dasm          (line 35):  [0x01EC] 0701            SET PUSH, B
 lib_clock.dasm          (line 36):  [0x01ED] 0021            SET B, A
 lib_clock.dasm          (line 37):  [0x01EE] 8C01            SET A, CLOCK_TOGLINT
-lib_clock.dasm          (line 38):  [0x01EF] 7A40 01F0       HWI [Clock_ID]
+lib_clock.dasm          (line 38):  [0x01EF] 7A40 01F1       HWI [Clock_ID]
 lib_clock.dasm          (line 39):  [0x01F1] 0401            SET A, B
 lib_clock.dasm          (line 40):  [0x01F2] 6021            SET B, POP
 lib_clock.dasm          (line 41):  [0x01F3] 6381            SET PC, POP
@@ -243,235 +243,287 @@ multitasker.dasm        (line 15):  [0x01F8]               :multitasker_Init_Loo
 multitasker.dasm        (line 16):  [0x01F8] 1E20            HWQ J
 multitasker.dasm        (line 17):  [0x01F9] 7C32 12D0       IFE B, 0x12d0
 multitasker.dasm        (line 18):  [0x01FB] 7C12 B402       IFE A, 0xb402
-multitasker.dasm        (line 19):  [0x01FC] 7C20 0201       JSR multitasker_Init_Clock
+multitasker.dasm        (line 19):  [0x01FC] 7C20 0202       JSR multitasker_Init_Clock
 multitasker.dasm        (line 20):  [0x01FE] 88E2            ADD J, 1
 multitasker.dasm        (line 21):  [0x01FF] 7F81 01F8       SET PC, multitasker_Init_Loop
-multitasker.dasm        (line 23):  [0x0201]               :multitasker_Init_Clock
-multitasker.dasm        (line 24):  [0x0201] 1C01            SET A, J
-multitasker.dasm        (line 25):  [0x0202] 7C20 01DA       JSR Clock_SetID
-multitasker.dasm        (line 26):  [0x0204] B401            SET A, 12
-multitasker.dasm        (line 27):  [0x0205] 7C20 01DD       JSR Clock_SetTicksec
-multitasker.dasm        (line 28):  [0x0206] 8801            SET A, 1
-multitasker.dasm        (line 29):  [0x0207] 7C20 01E9       JSR Clock_SetIntMsg
-multitasker.dasm        (line 30):  [0x0209] 7D40 020B       IAS multitasker_Interrupt
-multitasker.dasm        (line 34):  [0x020B]               :multitasker_Interrupt
-multitasker.dasm        (line 35):  [0x020B] 8813            IFN A, 1
-multitasker.dasm        (line 36):  [0x020C] 7D60 0000       RFI 0
-multitasker.dasm        (line 37):  [0x020E] 7D40 0000       IAS 0
-multitasker.dasm        (line 38):  [0x020F] 7D40 020B       IAS multitasker_Interrupt
-multitasker.dasm        (line 39):  [0x0211] 7D60 0000       RFI 0
-multitasker.dasm        (line 45):  [0x0213]               :multitasker_Progs_0
-multitasker.dasm        (line 46):  [0x0213]               :multitasker_Progs_0A
-multitasker.dasm        (line 47):  [0x0213]               :multitasker_Progs_0B
-multitasker.dasm        (line 48):  [0x0213]               :multitasker_Progs_0C
-multitasker.dasm        (line 49):  [0x0213]               :multitasker_Progs_0I
-multitasker.dasm        (line 50):  [0x0213]               :multitasker_Progs_0X
-multitasker.dasm        (line 51):  [0x0213]               :multitasker_Progs_0Y
-multitasker.dasm        (line 52):  [0x0213]               :multitasker_Progs_0Z
-multitasker.dasm        (line 53):  [0x0213]               :multitasker_Progs_0J
-multitasker.dasm        (line 54):  [0x0213]               :multitasker_Progs_0Stack
-int_manager.dasm        (line 37):  [0x0214]               #define max_proc_num 16
-int_manager.dasm        (line 38):  [0x0213]               #define sigs_per_proc 16
-int_manager.dasm        (line 39):  [0x0213]               #define ERR_missed_interrupts 0x0104
-int_manager.dasm        (line 40):  [0x0213]               #define ERR_signal_queue_full 0x0105
-int_manager.dasm        (line 42):  [0x0213]               :fn_request_handler_k
-int_manager.dasm        (line 43):  [0x0213] 0701            set push, b
-int_manager.dasm        (line 44):  [0x0214] 7D80 0001       iaq 1
-int_manager.dasm        (line 45):  [0x0216] 7C21 02C8       set b, interrupt_header_start
-int_manager.dasm        (line 46):  [0x0218]               :.loop_a
-int_manager.dasm        (line 47):  [0x0218] 8132            ife [b], -1
-int_manager.dasm        (line 48):  [0x0219] 7F81 0222       set pc, .found_space
-int_manager.dasm        (line 49):  [0x021B] 7C32 02E6       ife b, interrupt_header_end - 2
-int_manager.dasm        (line 50):  [0x021D] 7F81 0226       set pc, .no_space
-int_manager.dasm        (line 51):  [0x021F] 8C22            add b, 2
-int_manager.dasm        (line 52):  [0x0220] 7F81 0218       set pc, .loop_a
-int_manager.dasm        (line 53):  [0x0222]               :.found_space
-int_manager.dasm        (line 54):  [0x0222] 8521            set [b], 0
-int_manager.dasm        (line 55):  [0x0223] 0221 0001       set [b+1], a
-int_manager.dasm        (line 56):  [0x0225] 8B82            add pc, 1
-int_manager.dasm        (line 57):  [0x0226]               :.no_space
-int_manager.dasm        (line 58):  [0x0226] 8001            set a, -1
-int_manager.dasm        (line 59):  [0x0227] 7D80 0000       iaq 0
-int_manager.dasm        (line 60):  [0x0229] 6021            set b, pop
-int_manager.dasm        (line 61):  [0x022A] 6381            set pc, pop
-int_manager.dasm        (line 63):  [0x0229]               :fn_free_handler
-int_manager.dasm        (line 64):  [0x0228] 880F            shl a, 1
-int_manager.dasm        (line 65):  [0x0229] 7C02 02C8       add a, interrupt_header_start
-int_manager.dasm        (line 66):  [0x022B] 8101            set [a], -1
-int_manager.dasm        (line 67):  [0x022C] 8201 0001       set [a+1], -1
-int_manager.dasm        (line 68):  [0x022E] 6381            set pc, pop
-int_manager.dasm        (line 70):  [0x022F]               :fn_request_handler
-int_manager.dasm        (line 71):  [0x022F] 0701            set push, b
-int_manager.dasm        (line 72):  [0x0230] 7D80 0001       iaq 1
-int_manager.dasm        (line 73):  [0x0232] 7C21 02C8       set b, interrupt_header_start
-int_manager.dasm        (line 74):  [0x0234]               :.loop_a
-int_manager.dasm        (line 75):  [0x0234] 8132            ife [b], -1
-int_manager.dasm        (line 76):  [0x0234] 7F81 0239       set pc, .found_space
-int_manager.dasm        (line 77):  [0x0236] 7C32 02E6       ife b, interrupt_header_end - 2
-int_manager.dasm        (line 78):  [0x0237] 7F81 023F       set pc, .no_space
-int_manager.dasm        (line 79):  [0x0238] 8C22            add b, 2
-int_manager.dasm        (line 80):  [0x0238] 7F81 0234       set pc, .loop_a
-int_manager.dasm        (line 81):  [0x0239]               :.found_space
-int_manager.dasm        (line 82):  [0x0239] 7921 0178       set [b], [current_process]
-int_manager.dasm        (line 83):  [0x023A] 0221 0001       set [b+1], a
-int_manager.dasm        (line 84):  [0x023C] 0401            set a, b
-int_manager.dasm        (line 85):  [0x023D] 7C03 02C8       sub a, interrupt_header_start
-int_manager.dasm        (line 86):  [0x023E] 880D            shr a, 1
-int_manager.dasm        (line 87):  [0x023E] 8B82            add pc, 1
-int_manager.dasm        (line 88):  [0x023F]               :.no_space
-int_manager.dasm        (line 89):  [0x023F] 8001            set a, -1
-int_manager.dasm        (line 90):  [0x0240] 7D80 0000       iaq 0
-int_manager.dasm        (line 91):  [0x0241] 6021            set b, pop
-int_manager.dasm        (line 92):  [0x0241] 6381            set pc, pop
-int_manager.dasm        (line 95):  [0x0241]               :fn_set_signal_handler
-int_manager.dasm        (line 96):  [0x0241] 0701            set push, b
-int_manager.dasm        (line 97):  [0x0242] 7821 0178       set b, [current_process]
-int_manager.dasm        (line 98):  [0x0243] 7C22 02E8       add b, signal_handler_table_start
-int_manager.dasm        (line 99):  [0x0244] 0121            set [b], a
-int_manager.dasm        (line 100): [0x0245] 6021            set b, pop
-int_manager.dasm        (line 101): [0x0246] 6381            set pc, pop
-int_manager.dasm        (line 104): [0x0247]               :fn_init_IM
-int_manager.dasm        (line 105): [0x0247] 1B01            set push, i
-int_manager.dasm        (line 106): [0x0247] 1F01            set push, j
-int_manager.dasm        (line 107): [0x0248] 7D40 029B       ias interrupt_address
-int_manager.dasm        (line 108): [0x024A] 7CC1 02C8       set i, interrupt_header_start
-int_manager.dasm        (line 109): [0x024C]               :.loop_a
-int_manager.dasm        (line 110): [0x024C] 81DE            sti [i], -1
-int_manager.dasm        (line 111): [0x024D] 81DE            sti [i], -1
-int_manager.dasm        (line 112): [0x024E] 81DE            sti [i], -1
-int_manager.dasm        (line 113): [0x024E] 81DE            sti [i], -1
-int_manager.dasm        (line 114): [0x024F] 7CD3 02E8       ifn i, interrupt_header_end
-int_manager.dasm        (line 115): [0x0250] 7F81 024C       set pc, .loop_a
-int_manager.dasm        (line 116): [0x0252] 60E1            set j, pop
-int_manager.dasm        (line 117): [0x0253] 60C1            set i, pop
-int_manager.dasm        (line 118): [0x0254] 6381            set pc, pop
-int_manager.dasm        (line 120): [0x0255]               :fn_check_signals
-int_manager.dasm        (line 121): [0x0255] 0301            set push, a
-int_manager.dasm        (line 122): [0x0256] 0701            set push, b
-int_manager.dasm        (line 123): [0x0257] 0B01            set push, c
-int_manager.dasm        (line 124): [0x0258] 1B01            set push, i
-int_manager.dasm        (line 125): [0x0258] 1F01            set push, j
-int_manager.dasm        (line 126): [0x0259] 7D80 0001       iaq 1
-int_manager.dasm        (line 127): [0x025B] 78C1 0178       set i, [current_process]
-int_manager.dasm        (line 128): [0x025D] 84E1            set j, 0
-int_manager.dasm        (line 129): [0x025D] 1841            set c, i
-int_manager.dasm        (line 130): [0x025E] 4841 02E8       set c, [c+signal_handler_table_start]
-int_manager.dasm        (line 131): [0x0260] 8452            ife c, 0
-int_manager.dasm        (line 132): [0x0260] 7F81 027D       set pc, .done
-int_manager.dasm        (line 134): [0x0262] 98CF            shl i, 5
-int_manager.dasm        (line 135): [0x0263] 7CC2 02F8       add i, signal_table_start
-int_manager.dasm        (line 136): [0x0265]               :.loop_a
-int_manager.dasm        (line 137): [0x0264] 381E            sti a, [i]
-int_manager.dasm        (line 138): [0x0265] 8412            ife a, 0
-int_manager.dasm        (line 139): [0x0266] 7F81 026D       set pc, .cleanup
-int_manager.dasm        (line 140): [0x0268] 383E            sti b, [i]
-int_manager.dasm        (line 141): [0x0269] 0820            jsr c
-int_manager.dasm        (line 142): [0x0269] 7CF3 0020       ifn j, 32
-int_manager.dasm        (line 143): [0x026B] 7F81 0265       set pc, .loop_a
-int_manager.dasm        (line 144): [0x026D]               :.cleanup
-int_manager.dasm        (line 145): [0x026D] 1CC3            sub i, j
-int_manager.dasm        (line 146): [0x026E] 18E2            add j, i
-int_manager.dasm        (line 147): [0x026F] 1841            set c, i
-int_manager.dasm        (line 148): [0x0270] FC42            add c, (sigs_per_proc * 2) - 2
-int_manager.dasm        (line 149): [0x0271]               :.loop_b
-int_manager.dasm        (line 150): [0x0271] 3DDE            sti [i], [j]
-int_manager.dasm        (line 151): [0x0272] 3DDE            sti [i], [j]
-int_manager.dasm        (line 152): [0x0273] 85F2            ife [j], 0
-int_manager.dasm        (line 153): [0x0274] 7F81 0279       set pc, .loop_c
-int_manager.dasm        (line 154): [0x0276] 08F3            ifn j, c
-int_manager.dasm        (line 155): [0x0277] 7F81 0271       set pc, .loop_b
-int_manager.dasm        (line 156): [0x0279]               :.loop_c
-int_manager.dasm        (line 157): [0x0279] 85DE            sti [i], 0
-int_manager.dasm        (line 158): [0x027A] 85DE            sti [i], 0
-int_manager.dasm        (line 159): [0x027B] 08D3            ifn i, c
-int_manager.dasm        (line 160): [0x027B] 7F81 0279       set pc, .loop_c
-int_manager.dasm        (line 161): [0x027D]               :.done
-int_manager.dasm        (line 162): [0x027D] 7D80 0000       iaq 0
-int_manager.dasm        (line 163): [0x027E] 60E1            set j, pop
-int_manager.dasm        (line 164): [0x027F] 60C1            set i, pop
-int_manager.dasm        (line 165): [0x0280] 6041            set c, pop
-int_manager.dasm        (line 166): [0x0281] 6021            set b, pop
-int_manager.dasm        (line 167): [0x0281] 6001            set a, pop
-int_manager.dasm        (line 168): [0x0282] 6381            set pc, pop
-int_manager.dasm        (line 170): [0x0283]               :fn_send_signal
-int_manager.dasm        (line 171): [0x0283] 0B01            set push, c
-int_manager.dasm        (line 172): [0x0284] 7D80 0001       iaq 1
-int_manager.dasm        (line 173): [0x0286] 980F            shl a, 5
-int_manager.dasm        (line 174): [0x0287] 7C02 02F7       add a, signal_table_start - 1
-int_manager.dasm        (line 175): [0x0289] 0041            set c, a
-int_manager.dasm        (line 176): [0x028A] 7C42 0020       add c, sigs_per_proc * 2
-int_manager.dasm        (line 177): [0x028B]               :.loop_a
-int_manager.dasm        (line 178): [0x028B] 8802            add a, 1
-int_manager.dasm        (line 179): [0x028C] 0812            ife a, c
-int_manager.dasm        (line 180): [0x028D] 7F81 0297       set pc, .no_space
-int_manager.dasm        (line 181): [0x028F] 8513            ifn [a], 0
-int_manager.dasm        (line 182): [0x0290] 7F81 028B       set pc, .loop_a
-int_manager.dasm        (line 184): [0x0291] 0501            set [a], b
-int_manager.dasm        (line 185): [0x0292] 7A01 0178 0001  set [a+1], [current_process]
-int_manager.dasm        (line 186): [0x0295] 8401            set a, 0
-int_manager.dasm        (line 187): [0x0296] 8F82            add pc, 2
-int_manager.dasm        (line 188): [0x0297]               :.no_space
-int_manager.dasm        (line 189): [0x0297] 7C01 0105       set a, ERR_signal_queue_full
-int_manager.dasm        (line 190): [0x0298] 7D80 0000       iaq 0
-int_manager.dasm        (line 191): [0x0299] 6041            set c, pop
-int_manager.dasm        (line 192): [0x029A] 6381            set pc, pop
-int_manager.dasm        (line 195): [0x029B]               :interrupt_address
-int_manager.dasm        (line 196): [0x029B] 0701            set push, b
-int_manager.dasm        (line 197): [0x029C] 0B01            set push, c
-int_manager.dasm        (line 198): [0x029D] 0F01            set push, x
-int_manager.dasm        (line 199): [0x029E] 7D80 0001       iaq 1
-int_manager.dasm        (line 200): [0x02A0] 0021            set b, a
-int_manager.dasm        (line 201): [0x02A1] 882F            shl b, 1
-int_manager.dasm        (line 202): [0x02A2] 7C22 02C8       add b, interrupt_header_start
-int_manager.dasm        (line 203): [0x02A4] 8132            ife [b], -1
-int_manager.dasm        (line 204): [0x02A5] 7F81 02C1       set pc, .no_handler
-int_manager.dasm        (line 205): [0x02A7] 8532            ife [b], 0
-int_manager.dasm        (line 206): [0x02A8] 7F81 02B7       set pc, .kernel_handler
-int_manager.dasm        (line 207): [0x02A9] 7932 0178       ife [b], [current_process]
-int_manager.dasm        (line 208): [0x02AB] 7F81 02BB       set pc, .current_handler
-int_manager.dasm        (line 210): [0x02AD] 2441            set c, [b]
-int_manager.dasm        (line 211): [0x02AD] 984F            shl c, 5
-int_manager.dasm        (line 212): [0x02AD] 7C42 02F8       add c, signal_table_start
-int_manager.dasm        (line 213): [0x02AE] 0861            set x, c
-int_manager.dasm        (line 214): [0x02AE] C462            add x, sigs_per_proc
-int_manager.dasm        (line 215): [0x02AE]               :.loop_a
-int_manager.dasm        (line 216): [0x02AD] 0C52            ife c, x
-int_manager.dasm        (line 217): [0x02AD] 7F81 02B0       set pc, .queue_overflow
-int_manager.dasm        (line 218): [0x02AE] 8552            ife [c], 0
-int_manager.dasm        (line 219): [0x02AE] 7F81 02B1       set pc, .found_space
-int_manager.dasm        (line 220): [0x02AF] 8C42            add c, 2
-int_manager.dasm        (line 221): [0x02AF] 7F81 02AE       set pc, .loop_a
-int_manager.dasm        (line 222): [0x02B0]               :.queue_overflow
-int_manager.dasm        (line 223): [0x02AF] 8C43            sub c, 2
-int_manager.dasm        (line 224): [0x02AF] 7D41 0104       set [c], ERR_missed_interrupts
-int_manager.dasm        (line 225): [0x02B0] 7F81 02C1       set pc, .finish
-int_manager.dasm        (line 226): [0x02B1]               :.found_space
-int_manager.dasm        (line 227): [0x02B1] 4541 0001       set [c], [b+1]
-int_manager.dasm        (line 228): [0x02B3] 8641 0001       set [c+1], 0
-int_manager.dasm        (line 229): [0x02B5] 7F81 02C1       set pc, .finish
-int_manager.dasm        (line 230): [0x02B7]               :.kernel_handler
-int_manager.dasm        (line 231): [0x02B7] 4420 0001       jsr [b+1]
-int_manager.dasm        (line 232): [0x02B9] 7F81 02C1       set pc, .finish
-int_manager.dasm        (line 233): [0x02BB]               :.current_handler
-int_manager.dasm        (line 234): [0x02BB] 2401            set a, [b]
-int_manager.dasm        (line 235): [0x02BC] 880F            shl a, 1
-int_manager.dasm        (line 236): [0x02BD] ERROR: Illegal expression.
-int_manager.dasm        (line 236): [0x02BD] 0000 0000       set a, [a + (interrupt_header_start + 1)]
-int_manager.dasm        (line 237): [0x02BF] 2441            set c, [b]
-int_manager.dasm        (line 238): [0x02C0] 7C42 02E8       add c, signal_handler_table_start
-int_manager.dasm        (line 239): [0x02C1] 2820            jsr [c]
-int_manager.dasm        (line 241): [0x02C1]               :.no_handler
-int_manager.dasm        (line 242): [0x02C1]               :.finish
-int_manager.dasm        (line 243): [0x02C1] 7D80 0000       iaq 0
-int_manager.dasm        (line 244): [0x02C3] 6061            set x, pop
-int_manager.dasm        (line 245): [0x02C4] 6041            set c, pop
-int_manager.dasm        (line 246): [0x02C5] 6021            set b, pop
-int_manager.dasm        (line 247): [0x02C6] 7D60 0000       rfi 0
-int_manager.dasm        (line 250): [0x02C8]               :interrupt_header_start
-int_manager.dasm        (line 253): [0x02C8] 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000#reserve 32
-int_manager.dasm        (line 254): [0x02E8]               :interrupt_header_end
-int_manager.dasm        (line 256): [0x02E8]               :signal_handler_table_start
-int_manager.dasm        (line 258): [0x02E8] 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000#reserve 16
-int_manager.dasm        (line 260): [0x02F8]               :signal_table_start
-int_manager.dasm        (line 263): [0x02F8] 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000#reserve 512
-../src/kernel/main.dasm (line 19):  [0x0558]               :free_space_start
+multitasker.dasm        (line 23):  [0x0201] 6381            SET PC, POP
+multitasker.dasm        (line 25):  [0x0202]               :multitasker_Init_Clock
+multitasker.dasm        (line 26):  [0x0202] 1C01            SET A, J
+multitasker.dasm        (line 27):  [0x0203] 7C20 01DA       JSR Clock_SetID
+multitasker.dasm        (line 28):  [0x0204] B401            SET A, 12
+multitasker.dasm        (line 29):  [0x0205] 7C20 01DD       JSR Clock_SetTicksec
+multitasker.dasm        (line 30):  [0x0207] 7C01 020E       SET A, multitasker_Interrupt
+multitasker.dasm        (line 31):  [0x0209] 7C20 0244       JSR fn_request_handler_k
+multitasker.dasm        (line 32):  [0x020B] 7C20 01EA       JSR Clock_SetIntMsg
+multitasker.dasm        (line 33):  [0x020D] 6381            SET PC, POP
+multitasker.dasm        (line 36):  [0x020E]               :multitasker_Interrupt
+multitasker.dasm        (line 37):  [0x020E] 0301            SET PUSH, A
+multitasker.dasm        (line 38):  [0x020E] 7C01 0221       SET A, multitasker_Progs_0
+multitasker.dasm        (line 39):  [0x0210] 0701            SET PUSH, B
+multitasker.dasm        (line 40):  [0x0211] 7821 0222       SET B, [multitasker_curProg]
+multitasker.dasm        (line 41):  [0x0213] B024            MUL B, 0xB
+multitasker.dasm        (line 42):  [0x0214] 0402            ADD A, B
+multitasker.dasm        (line 43):  [0x0215] 6021            SET B, POP
+multitasker.dasm        (line 44):  [0x0216] 8802            ADD A, 1
+multitasker.dasm        (line 45):  [0x0217] 8903            SUB [A], 1
+multitasker.dasm        (line 46):  [0x0218] 8513            IFN [A], 0
+multitasker.dasm        (line 47):  [0x0219] 7F81 0222       SET PC, multitasker_Interrupt_End
+multitasker.dasm        (line 49):  [0x021B] 8802            ADD A, 1
+multitasker.dasm        (line 50):  [0x021C] 6101            SET [A], POP
+multitasker.dasm        (line 51):  [0x021D] 8802            ADD A, 1
+multitasker.dasm        (line 52):  [0x021E] 0501            SET [A], B
+multitasker.dasm        (line 53):  [0x021F] 8802            ADD A, 1
+multitasker.dasm        (line 54):  [0x0220] 0901            SET [A], C
+multitasker.dasm        (line 55):  [0x0221] 8802            ADD A, 1
+multitasker.dasm        (line 56):  [0x0222] 1901            SET [A], I
+multitasker.dasm        (line 57):  [0x0223] 8802            ADD A, 1
+multitasker.dasm        (line 58):  [0x0224] 0D01            SET [A], X
+multitasker.dasm        (line 59):  [0x0225] 8802            ADD A, 1
+multitasker.dasm        (line 60):  [0x0226] 1101            SET [A], Y
+multitasker.dasm        (line 61):  [0x0227] 8802            ADD A, 1
+multitasker.dasm        (line 62):  [0x0227] 1501            SET [A], Z
+multitasker.dasm        (line 63):  [0x0227] 8802            ADD A, 1
+multitasker.dasm        (line 64):  [0x0227] 1D01            SET [A], J
+multitasker.dasm        (line 66):  [0x0228]               :multitasker_Interrupt_End
+multitasker.dasm        (line 67):  [0x0228] 7D60 0000       RFI 0
+multitasker.dasm        (line 69):  [0x022A]               :multitasker_curProg dat 0
+multitasker.dasm        (line 69):  [0x022A]                 .dat 0
+multitasker.dasm        (line 69):  [0x022A]                      0000
+multitasker.dasm        (line 76):  [0x022A]               :multitasker_Progs_0 dat 0
+multitasker.dasm        (line 76):  [0x022A]                 .dat 0
+multitasker.dasm        (line 76):  [0x022A]                      0000
+multitasker.dasm        (line 77):  [0x022B]               :multitasker_Progs_0Time dat 0
+multitasker.dasm        (line 77):  [0x022B]                 .dat 0
+multitasker.dasm        (line 77):  [0x022B]                      0000
+multitasker.dasm        (line 78):  [0x022B]               :multitasker_Progs_0A dat 0
+multitasker.dasm        (line 78):  [0x022B]                 .dat 0
+multitasker.dasm        (line 78):  [0x022B]                      0000
+multitasker.dasm        (line 79):  [0x022B]               :multitasker_Progs_0B dat 0
+multitasker.dasm        (line 79):  [0x022B]                 .dat 0
+multitasker.dasm        (line 79):  [0x022B]                      0000
+multitasker.dasm        (line 80):  [0x022B]               :multitasker_Progs_0C dat 0
+multitasker.dasm        (line 80):  [0x022B]                 .dat 0
+multitasker.dasm        (line 80):  [0x022B]                      0000
+multitasker.dasm        (line 81):  [0x022B]               :multitasker_Progs_0I dat 0
+multitasker.dasm        (line 81):  [0x022B]                 .dat 0
+multitasker.dasm        (line 81):  [0x022B]                      0000
+multitasker.dasm        (line 82):  [0x022C]               :multitasker_Progs_0X dat 0
+multitasker.dasm        (line 82):  [0x022C]                 .dat 0
+multitasker.dasm        (line 82):  [0x022C]                      0000
+multitasker.dasm        (line 83):  [0x022C]               :multitasker_Progs_0Y dat 0
+multitasker.dasm        (line 83):  [0x022C]                 .dat 0
+multitasker.dasm        (line 83):  [0x022C]                      0000
+multitasker.dasm        (line 84):  [0x022D]               :multitasker_Progs_0Z dat 0
+multitasker.dasm        (line 84):  [0x022D]                 .dat 0
+multitasker.dasm        (line 84):  [0x022D]                      0000
+multitasker.dasm        (line 85):  [0x022E]               :multitasker_Progs_0J dat 0
+multitasker.dasm        (line 85):  [0x022E]                 .dat 0
+multitasker.dasm        (line 85):  [0x022E]                      0000
+multitasker.dasm        (line 86):  [0x022E]               :multitasker_Progs_0Stack dat 0
+multitasker.dasm        (line 86):  [0x022E]                 .dat 0
+multitasker.dasm        (line 86):  [0x022E]                      0000
+int_manager.dasm        (line 37):  [0x0246]               #define max_proc_num 16
+int_manager.dasm        (line 38):  [0x0245]               #define sigs_per_proc 16
+int_manager.dasm        (line 39):  [0x0245]               #define ERR_missed_interrupts 0x0104
+int_manager.dasm        (line 40):  [0x0245]               #define ERR_signal_queue_full 0x0105
+int_manager.dasm        (line 42):  [0x0244]               :fn_request_handler_k
+int_manager.dasm        (line 43):  [0x0244] 0701            set push, b
+int_manager.dasm        (line 44):  [0x0245] 7D80 0001       iaq 1
+int_manager.dasm        (line 45):  [0x0246] 7C21 02EE       set b, interrupt_header_start
+int_manager.dasm        (line 46):  [0x0247]               :.loop_a
+int_manager.dasm        (line 47):  [0x0246] 8132            ife [b], -1
+int_manager.dasm        (line 48):  [0x0247] 7F81 024E       set pc, .found_space
+int_manager.dasm        (line 49):  [0x0249] 7C32 030C       ife b, interrupt_header_end - 2
+int_manager.dasm        (line 50):  [0x024A] 7F81 0250       set pc, .no_space
+int_manager.dasm        (line 51):  [0x024C] 8C22            add b, 2
+int_manager.dasm        (line 52):  [0x024C] 7F81 0247       set pc, .loop_a
+int_manager.dasm        (line 53):  [0x024E]               :.found_space
+int_manager.dasm        (line 54):  [0x024D] 8521            set [b], 0
+int_manager.dasm        (line 55):  [0x024E] 0221 0001       set [b+1], a
+int_manager.dasm        (line 56):  [0x024F] 8B82            add pc, 1
+int_manager.dasm        (line 57):  [0x0250]               :.no_space
+int_manager.dasm        (line 58):  [0x024F] 8001            set a, -1
+int_manager.dasm        (line 59):  [0x0250] 7D80 0000       iaq 0
+int_manager.dasm        (line 60):  [0x0251] 6021            set b, pop
+int_manager.dasm        (line 61):  [0x0252] 6381            set pc, pop
+int_manager.dasm        (line 63):  [0x0250]               :fn_free_handler
+int_manager.dasm        (line 64):  [0x024E] 880F            shl a, 1
+int_manager.dasm        (line 65):  [0x024F] 7C02 02EE       add a, interrupt_header_start
+int_manager.dasm        (line 66):  [0x0251] 8101            set [a], -1
+int_manager.dasm        (line 67):  [0x0252] 8201 0001       set [a+1], -1
+int_manager.dasm        (line 68):  [0x0254] 6381            set pc, pop
+int_manager.dasm        (line 70):  [0x0255]               :fn_request_handler
+int_manager.dasm        (line 71):  [0x0255] 0701            set push, b
+int_manager.dasm        (line 72):  [0x0256] 7D80 0001       iaq 1
+int_manager.dasm        (line 73):  [0x0258] 7C21 02EE       set b, interrupt_header_start
+int_manager.dasm        (line 74):  [0x025A]               :.loop_a
+int_manager.dasm        (line 75):  [0x025A] 8132            ife [b], -1
+int_manager.dasm        (line 76):  [0x025A] 7F81 025F       set pc, .found_space
+int_manager.dasm        (line 77):  [0x025C] 7C32 030C       ife b, interrupt_header_end - 2
+int_manager.dasm        (line 78):  [0x025D] 7F81 0265       set pc, .no_space
+int_manager.dasm        (line 79):  [0x025E] 8C22            add b, 2
+int_manager.dasm        (line 80):  [0x025E] 7F81 025A       set pc, .loop_a
+int_manager.dasm        (line 81):  [0x025F]               :.found_space
+int_manager.dasm        (line 82):  [0x025F] 7921 016D       set [b], [current_process]
+int_manager.dasm        (line 83):  [0x0260] 0221 0001       set [b+1], a
+int_manager.dasm        (line 84):  [0x0262] 0401            set a, b
+int_manager.dasm        (line 85):  [0x0263] 7C03 02EE       sub a, interrupt_header_start
+int_manager.dasm        (line 86):  [0x0264] 880D            shr a, 1
+int_manager.dasm        (line 87):  [0x0264] 8B82            add pc, 1
+int_manager.dasm        (line 88):  [0x0265]               :.no_space
+int_manager.dasm        (line 89):  [0x0265] 8001            set a, -1
+int_manager.dasm        (line 90):  [0x0266] 7D80 0000       iaq 0
+int_manager.dasm        (line 91):  [0x0267] 6021            set b, pop
+int_manager.dasm        (line 92):  [0x0267] 6381            set pc, pop
+int_manager.dasm        (line 95):  [0x0267]               :fn_set_signal_handler
+int_manager.dasm        (line 96):  [0x0267] 0701            set push, b
+int_manager.dasm        (line 97):  [0x0268] 7821 016D       set b, [current_process]
+int_manager.dasm        (line 98):  [0x0269] 7C22 030E       add b, signal_handler_table_start
+int_manager.dasm        (line 99):  [0x026A] 0121            set [b], a
+int_manager.dasm        (line 100): [0x026B] 6021            set b, pop
+int_manager.dasm        (line 101): [0x026C] 6381            set pc, pop
+int_manager.dasm        (line 104): [0x026D]               :fn_init_IM
+int_manager.dasm        (line 105): [0x026D] 1B01            set push, i
+int_manager.dasm        (line 106): [0x026D] 1F01            set push, j
+int_manager.dasm        (line 107): [0x026E] 7D40 02C0       ias interrupt_address
+int_manager.dasm        (line 108): [0x0270] 7CC1 02EE       set i, interrupt_header_start
+int_manager.dasm        (line 109): [0x0272]               :.loop_a
+int_manager.dasm        (line 110): [0x0271] 81DE            sti [i], -1
+int_manager.dasm        (line 111): [0x0272] 81DE            sti [i], -1
+int_manager.dasm        (line 112): [0x0273] 81DE            sti [i], -1
+int_manager.dasm        (line 113): [0x0273] 81DE            sti [i], -1
+int_manager.dasm        (line 114): [0x0274] 7CD3 030E       ifn i, interrupt_header_end
+int_manager.dasm        (line 115): [0x0275] 7F81 0272       set pc, .loop_a
+int_manager.dasm        (line 116): [0x0277] 60E1            set j, pop
+int_manager.dasm        (line 117): [0x0278] 60C1            set i, pop
+int_manager.dasm        (line 118): [0x0279] 6381            set pc, pop
+int_manager.dasm        (line 120): [0x027A]               :fn_check_signals
+int_manager.dasm        (line 121): [0x027A] 0301            set push, a
+int_manager.dasm        (line 122): [0x027B] 0701            set push, b
+int_manager.dasm        (line 123): [0x027C] 0B01            set push, c
+int_manager.dasm        (line 124): [0x027D] 1B01            set push, i
+int_manager.dasm        (line 125): [0x027D] 1F01            set push, j
+int_manager.dasm        (line 126): [0x027E] 7D80 0001       iaq 1
+int_manager.dasm        (line 127): [0x0280] 78C1 016D       set i, [current_process]
+int_manager.dasm        (line 128): [0x0282] 84E1            set j, 0
+int_manager.dasm        (line 129): [0x0282] 1841            set c, i
+int_manager.dasm        (line 130): [0x0283] 4841 030E       set c, [c+signal_handler_table_start]
+int_manager.dasm        (line 131): [0x0285] 8452            ife c, 0
+int_manager.dasm        (line 132): [0x0285] 7F81 02A2       set pc, .done
+int_manager.dasm        (line 134): [0x0287] 98CF            shl i, 5
+int_manager.dasm        (line 135): [0x0288] 7CC2 031E       add i, signal_table_start
+int_manager.dasm        (line 136): [0x028A]               :.loop_a
+int_manager.dasm        (line 137): [0x0289] 381E            sti a, [i]
+int_manager.dasm        (line 138): [0x028A] 8412            ife a, 0
+int_manager.dasm        (line 139): [0x028B] 7F81 0292       set pc, .cleanup
+int_manager.dasm        (line 140): [0x028D] 383E            sti b, [i]
+int_manager.dasm        (line 141): [0x028E] 0820            jsr c
+int_manager.dasm        (line 142): [0x028E] 7CF3 0020       ifn j, 32
+int_manager.dasm        (line 143): [0x0290] 7F81 028A       set pc, .loop_a
+int_manager.dasm        (line 144): [0x0292]               :.cleanup
+int_manager.dasm        (line 145): [0x0292] 1CC3            sub i, j
+int_manager.dasm        (line 146): [0x0293] 18E2            add j, i
+int_manager.dasm        (line 147): [0x0294] 1841            set c, i
+int_manager.dasm        (line 148): [0x0295] FC42            add c, (sigs_per_proc * 2) - 2
+int_manager.dasm        (line 149): [0x0296]               :.loop_b
+int_manager.dasm        (line 150): [0x0296] 3DDE            sti [i], [j]
+int_manager.dasm        (line 151): [0x0297] 3DDE            sti [i], [j]
+int_manager.dasm        (line 152): [0x0298] 85F2            ife [j], 0
+int_manager.dasm        (line 153): [0x0299] 7F81 029E       set pc, .loop_c
+int_manager.dasm        (line 154): [0x029B] 08F3            ifn j, c
+int_manager.dasm        (line 155): [0x029C] 7F81 0296       set pc, .loop_b
+int_manager.dasm        (line 156): [0x029E]               :.loop_c
+int_manager.dasm        (line 157): [0x029E] 85DE            sti [i], 0
+int_manager.dasm        (line 158): [0x029F] 85DE            sti [i], 0
+int_manager.dasm        (line 159): [0x02A0] 08D3            ifn i, c
+int_manager.dasm        (line 160): [0x02A0] 7F81 029E       set pc, .loop_c
+int_manager.dasm        (line 161): [0x02A2]               :.done
+int_manager.dasm        (line 162): [0x02A2] 7D80 0000       iaq 0
+int_manager.dasm        (line 163): [0x02A3] 60E1            set j, pop
+int_manager.dasm        (line 164): [0x02A4] 60C1            set i, pop
+int_manager.dasm        (line 165): [0x02A5] 6041            set c, pop
+int_manager.dasm        (line 166): [0x02A6] 6021            set b, pop
+int_manager.dasm        (line 167): [0x02A6] 6001            set a, pop
+int_manager.dasm        (line 168): [0x02A7] 6381            set pc, pop
+int_manager.dasm        (line 170): [0x02A8]               :fn_send_signal
+int_manager.dasm        (line 171): [0x02A8] 0B01            set push, c
+int_manager.dasm        (line 172): [0x02A9] 7D80 0001       iaq 1
+int_manager.dasm        (line 173): [0x02AB] 980F            shl a, 5
+int_manager.dasm        (line 174): [0x02AC] 7C02 031D       add a, signal_table_start - 1
+int_manager.dasm        (line 175): [0x02AE] 0041            set c, a
+int_manager.dasm        (line 176): [0x02AF] 7C42 0020       add c, sigs_per_proc * 2
+int_manager.dasm        (line 177): [0x02B0]               :.loop_a
+int_manager.dasm        (line 178): [0x02B0] 8802            add a, 1
+int_manager.dasm        (line 179): [0x02B1] 0812            ife a, c
+int_manager.dasm        (line 180): [0x02B2] 7F81 02BC       set pc, .no_space
+int_manager.dasm        (line 181): [0x02B4] 8513            ifn [a], 0
+int_manager.dasm        (line 182): [0x02B5] 7F81 02B0       set pc, .loop_a
+int_manager.dasm        (line 184): [0x02B6] 0501            set [a], b
+int_manager.dasm        (line 185): [0x02B7] 7A01 016D 0001  set [a+1], [current_process]
+int_manager.dasm        (line 186): [0x02BA] 8401            set a, 0
+int_manager.dasm        (line 187): [0x02BB] 8F82            add pc, 2
+int_manager.dasm        (line 188): [0x02BC]               :.no_space
+int_manager.dasm        (line 189): [0x02BC] 7C01 0105       set a, ERR_signal_queue_full
+int_manager.dasm        (line 190): [0x02BD] 7D80 0000       iaq 0
+int_manager.dasm        (line 191): [0x02BE] 6041            set c, pop
+int_manager.dasm        (line 192): [0x02BF] 6381            set pc, pop
+int_manager.dasm        (line 195): [0x02C0]               :interrupt_address
+int_manager.dasm        (line 196): [0x02C0] 0701            set push, b
+int_manager.dasm        (line 197): [0x02C1] 0B01            set push, c
+int_manager.dasm        (line 198): [0x02C2] 0F01            set push, x
+int_manager.dasm        (line 199): [0x02C3] 7D80 0001       iaq 1
+int_manager.dasm        (line 200): [0x02C5] 0021            set b, a
+int_manager.dasm        (line 201): [0x02C6] 882F            shl b, 1
+int_manager.dasm        (line 202): [0x02C7] 7C22 02EE       add b, interrupt_header_start
+int_manager.dasm        (line 203): [0x02C9] 8132            ife [b], -1
+int_manager.dasm        (line 204): [0x02CA] 7F81 02E7       set pc, .no_handler
+int_manager.dasm        (line 205): [0x02CC] 8532            ife [b], 0
+int_manager.dasm        (line 206): [0x02CD] 7F81 02DC       set pc, .kernel_handler
+int_manager.dasm        (line 207): [0x02CE] 7932 016D       ife [b], [current_process]
+int_manager.dasm        (line 208): [0x02D0] 7F81 02E0       set pc, .current_handler
+int_manager.dasm        (line 210): [0x02D2] 2441            set c, [b]
+int_manager.dasm        (line 211): [0x02D2] 984F            shl c, 5
+int_manager.dasm        (line 212): [0x02D2] 7C42 031E       add c, signal_table_start
+int_manager.dasm        (line 213): [0x02D3] 0861            set x, c
+int_manager.dasm        (line 214): [0x02D3] C462            add x, sigs_per_proc
+int_manager.dasm        (line 215): [0x02D3]               :.loop_a
+int_manager.dasm        (line 216): [0x02D2] 0C52            ife c, x
+int_manager.dasm        (line 217): [0x02D2] 7F81 02D5       set pc, .queue_overflow
+int_manager.dasm        (line 218): [0x02D3] 8552            ife [c], 0
+int_manager.dasm        (line 219): [0x02D3] 7F81 02D6       set pc, .found_space
+int_manager.dasm        (line 220): [0x02D4] 8C42            add c, 2
+int_manager.dasm        (line 221): [0x02D4] 7F81 02D3       set pc, .loop_a
+int_manager.dasm        (line 222): [0x02D5]               :.queue_overflow
+int_manager.dasm        (line 223): [0x02D4] 8C43            sub c, 2
+int_manager.dasm        (line 224): [0x02D4] 7D41 0104       set [c], ERR_missed_interrupts
+int_manager.dasm        (line 225): [0x02D5] 7F81 02E7       set pc, .finish
+int_manager.dasm        (line 226): [0x02D6]               :.found_space
+int_manager.dasm        (line 227): [0x02D6] 4541 0001       set [c], [b+1]
+int_manager.dasm        (line 228): [0x02D8] 8641 0001       set [c+1], 0
+int_manager.dasm        (line 229): [0x02DA] 7F81 02E7       set pc, .finish
+int_manager.dasm        (line 230): [0x02DC]               :.kernel_handler
+int_manager.dasm        (line 231): [0x02DC] 4420 0001       jsr [b+1]
+int_manager.dasm        (line 232): [0x02DE] 7F81 02E7       set pc, .finish
+int_manager.dasm        (line 233): [0x02E0]               :.current_handler
+int_manager.dasm        (line 234): [0x02E0] 2401            set a, [b]
+int_manager.dasm        (line 235): [0x02E1] 880F            shl a, 1
+int_manager.dasm        (line 240): [0x02E0] 7C02 02EF       add a, (interrupt_header_start + 1)
+int_manager.dasm        (line 241): [0x02E2] 2001            set a, [a]
+int_manager.dasm        (line 243): [0x02E3] 2441            set c, [b]
+int_manager.dasm        (line 244): [0x02E4] 7C42 030E       add c, signal_handler_table_start
+int_manager.dasm        (line 245): [0x02E6] 2820            jsr [c]
+int_manager.dasm        (line 247): [0x02E7]               :.no_handler
+int_manager.dasm        (line 248): [0x02E7]               :.finish
+int_manager.dasm        (line 249): [0x02E7] 7D80 0000       iaq 0
+int_manager.dasm        (line 250): [0x02E9] 6061            set x, pop
+int_manager.dasm        (line 251): [0x02EA] 6041            set c, pop
+int_manager.dasm        (line 252): [0x02EB] 6021            set b, pop
+int_manager.dasm        (line 253): [0x02EC] 7D60 0000       rfi 0
+int_manager.dasm        (line 256): [0x02EE]               :interrupt_header_start
+int_manager.dasm        (line 259): [0x02EE] 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000#reserve 32
+int_manager.dasm        (line 260): [0x030E]               :interrupt_header_end
+int_manager.dasm        (line 262): [0x030E]               :signal_handler_table_start
+int_manager.dasm        (line 264): [0x030E] 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000#reserve 16
+int_manager.dasm        (line 266): [0x031E]               :signal_table_start
+int_manager.dasm        (line 269): [0x031E] 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000#reserve 512
+../src/kernel/main.dasm (line 19):  [0x0589]               :free_space_start
