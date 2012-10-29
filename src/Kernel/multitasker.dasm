@@ -1,200 +1,153 @@
-; --------------------------------------------
-; Title:   multitasker
-; Author:  Alex
-; Date:    10/15/2012
-; Version: 
-; --------------------------------------------
-
 #include "lib_clock.dasm"
-
-;@name multitasker_Init
-;starts the timer interrupt, and sets up the basic data structure
-;@see thePalindrome
 :multitasker_Init
-    :multitasker_Init_Loop
-        HWQ J
-        IFE B, 0x12d0
-            IFE A, 0xb402
-                JSR multitasker_Init_Clock
-        ADD J, 1
-        SET PC, multitasker_Init_Loop
-		
-	SET PC, POP
-            
-    :multitasker_Init_Clock
-        SET A, J
-        JSR Clock_SetID
-    SET A, 12
-    JSR Clock_SetTicksec
-	SET A, multitasker_Interrupt
-	SET [current_process], 0
-	JSR fn_request_handler_k
-    JSR Clock_SetIntMsg
-    SET PC, POP
-	
-;@name multitasker_addProg
-;adds a program to the program tables
-;@params A the PC of the program's start
-;@returns A the program ID (needed to kill it), -1 if there wasn't room
-;@see thePalindrome	
-:multitasker_addProg ; TODO, load the program into memory
-    SET PUSH, B
-	SET PUSH, C
-	SET C, 0
-	SET B, multitasker_Progs_0
-	SUB B, 0xB
-	
-	ADD C, 1
-	ADD B, 0xB
-	IFN [B], 0
-	    IFL 0xF, C
-	        SUB PC, 5 ; B now points to an empty program slot
-	
-    IFL 0xF, C
-		ADD PC, 4
-	SET A, -1
-	SET C, POP
-	SET B, POP
-	SET PC, POP
-	
-	
-	SET [B], A
-	
-	SET A, B
-	SET C, POP
-	SET B, POP
-	SET PC, POP
-	
-;@name multitasker_killProg
-;removes a program from the program list
-;@params A the program ID
-;@see thePalindrome
-:multitasker_killProg ; TODO add special case if trying to kill current program
-    MUL A, 0xB
-    ADD A, multitasker_Progs_0
-	SET [A], 0
-	ADD A, 1
-	SET [A], 0
-	ADD A, 1
-	SET [A], 0
-	ADD A, 1
-	SET [A], 0
-	ADD A, 1
-	SET [A], 0
-	ADD A, 1
-	SET [A], 0
-	ADD A, 1
-	SET [A], 0
-	ADD A, 1
-	SET [A], 0
-	ADD A, 1
-	SET [A], 0
-	ADD A, 1
-	SET [A], 0
-	ADD A, 1
-	SET [A], 0
-	SET PC, POP
-	
-;@name multitasker_Interrupt
-;handles the main interrupt
-;@see thePalindrome
+:multitasker_Init_Loop
+HWQ J
+IFE B, 0x12d0
+IFE A, 0xb402
+JSR multitasker_Init_Clock
+ADD J, 1
+SET PC, multitasker_Init_Loop
+SET PC, POP
+:multitasker_Init_Clock
+SET A, J
+JSR Clock_SetID
+SET A, 12
+JSR Clock_SetTicksec
+SET A, multitasker_Interrupt
+SET [current_process], 0
+JSR fn_request_handler_k
+JSR Clock_SetIntMsg
+SET PC, POP
+:multitasker_addProg
+SET PUSH, B
+SET PUSH, C
+SET C, 0
+SET B, multitasker_Progs_0
+SUB B, 0xB
+ADD C, 1
+ADD B, 0xB
+IFN [B], 0
+IFL 0xF, C
+SUB PC, 5
+IFL 0xF, C
+ADD PC, 4
+SET A, -1
+SET C, POP
+SET B, POP
+SET PC, POP
+SET [B], A
+SET A, B
+SET C, POP
+SET B, POP
+SET PC, POP
+:multitasker_killProg
+MUL A, 0xB
+ADD A, multitasker_Progs_0
+SET [A], 0
+ADD A, 1
+SET [A], 0
+ADD A, 1
+SET [A], 0
+ADD A, 1
+SET [A], 0
+ADD A, 1
+SET [A], 0
+ADD A, 1
+SET [A], 0
+ADD A, 1
+SET [A], 0
+ADD A, 1
+SET [A], 0
+ADD A, 1
+SET [A], 0
+ADD A, 1
+SET [A], 0
+ADD A, 1
+SET [A], 0
+SET PC, POP
 :multitasker_Interrupt
-    SET PUSH, A
-	SET A, multitasker_Progs_0
-	SET PUSH, B
-	SET B, [multitasker_curProg]
-	MUL B, 0xB
-	ADD A, B
-	SET B, POP ;at this point, A points to multitasker_Progs_(number of cur prog)
-	ADD A, 1
-	SUB [A], 1
-	IFN [A], 0
-	    SET PC, multitasker_Interrupt_End
-		
-	ADD A, 1
-	SET [A], POP
-	ADD A, 1
-	SET B, SP
-	ADD B, 4
-	SET [A], [B]
-	ADD A, 1
-	SUB B, 1
-	SET [A], [B]
-	ADD A, 1
-	SET [A], I
-	ADD A, 1
-	SUB B, 1
-	SET [A], [B]
-	ADD A, 1
-	SET [A], Y
-	ADD A, 1
-	SET [A], Z
-	ADD A, 1
-	SET [A], J
-	
-	ADD B, 6 ;B now points to the location in the Stack where the old program was running
-	SUB A, 9
-	SET [A], [B]
-	
-	ADD A, 10
-	ADD B, 1
-	SET [A], B ; SP has been saved for the new program
-	SUB B, 1
-	
-	SET A, multitasker_Progs_0
-	SET PUSH, B
-	SET B, [multitasker_curProg]
-	MUL B, 0xB
-	ADD A, B
-	SET B, POP
-	
-	ADD [multitasker_curProg], 1
-	ADD A, 0xB
-	IFE [A], 0 ;If there's no program loaded
-	    SUB PC, 5
-		
-	SET A, multitasker_Progs_0
-	SET PUSH, B
-	SET B, [multitasker_curProg]
-	MUL B, 0xB
-	ADD A, B
-	SET B, POP
-	SET [B], [A] ;The stack will now return to the new program
-	ADD A, 1
-	SET [A], 14 ; each program gets 14 ticks
-	ADD A, 1 ; A now points to the A register of the new program
-	SUB B, 2 ; B now points to the stack where the B register is kept
-	SUB B, 2 ; B now points to the stack where the X register is kept
-	ADD A, 7 ; A now points to the J register of the new program
-	SET J, [A]
-	SUB A, 1
-	SET Z, [A]
-	SUB A, 1
-	SET Y, [A]
-	SUB A, 1
-	SET [B], [A] ;setting X
-	SUB A, 1
-	ADD B, 1 ; B now points to the stack where the C register is kept
-	SET I, [A]
-	SUB A, 1
-	SET [B], [A] ;setting C
-	SUB A, 1
-	ADD B, 1
-	SET [B], [A]
-	SUB A, 1
-	SET A, [A]
-	SET [current_process], [multitasker_curProg]
-		
-	:multitasker_Interrupt_End
-    SET PC, POP
-	
+SET PUSH, A
+SET A, multitasker_Progs_0
+SET PUSH, B
+SET B, [multitasker_curProg]
+MUL B, 0xB
+ADD A, B
+SET B, POP
+ADD A, 1
+SUB [A], 1
+IFN [A], 0
+SET PC, multitasker_Interrupt_End
+ADD A, 1
+SET [A], POP
+ADD A, 1
+SET B, SP
+ADD B, 4
+SET [A], [B]
+ADD A, 1
+SUB B, 1
+SET [A], [B]
+ADD A, 1
+SET [A], I
+ADD A, 1
+SUB B, 1
+SET [A], [B]
+ADD A, 1
+SET [A], Y
+ADD A, 1
+SET [A], Z
+ADD A, 1
+SET [A], J
+ADD B, 6
+SUB A, 9
+SET [A], [B]
+ADD A, 10
+ADD B, 1
+SET [A], B
+SUB B, 1
+SET A, multitasker_Progs_0
+SET PUSH, B
+SET B, [multitasker_curProg]
+MUL B, 0xB
+ADD A, B
+SET B, POP
+ADD [multitasker_curProg], 1
+ADD A, 0xB
+IFE [A], 0
+SUB PC, 5
+SET A, multitasker_Progs_0
+SET PUSH, B
+SET B, [multitasker_curProg]
+MUL B, 0xB
+ADD A, B
+SET B, POP
+SET [B], [A]
+ADD A, 1
+SET [A], 14
+ADD A, 1
+SUB B, 2
+SUB B, 2
+ADD A, 7
+SET J, [A]
+SUB A, 1
+SET Z, [A]
+SUB A, 1
+SET Y, [A]
+SUB A, 1
+SET [B], [A]
+SUB A, 1
+ADD B, 1
+SET I, [A]
+SUB A, 1
+SET [B], [A]
+SUB A, 1
+ADD B, 1
+SET [B], [A]
+SUB A, 1
+SET A, [A]
+SET [current_process], [multitasker_curProg]
+:multitasker_Interrupt_End
+SET PC, POP
 :multitasker_curProg dat 0
-
-;Definition of datastructure
-;Current PC
-;How many ticks are left
-;Registers (ABCIXYZJ)
-;Where the stack is hiding
 :multitasker_Progs_0 dat 0,0,0,0,0,0,0,0,0,0,0
 :multitasker_Progs_1 dat 0,0,0,0,0,0,0,0,0,0,0
 :multitasker_Progs_2 dat 0,0,0,0,0,0,0,0,0,0,0

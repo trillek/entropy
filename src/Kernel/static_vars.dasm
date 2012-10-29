@@ -1,41 +1,22 @@
-;The purpose of this is a way to use names to refer to other wise numerical values
-;This way, you don't need to look up what an Interrupt is doing, or which key
-;is being pressed/output when looking at code. The assembler uses them (Devkit and Organic)
-;and are not part of the overall size of the kernel, just makes code more readable.
-;Feel free to suggest other names, these are just what I use.
-
-
-;Defines
-;-------
-
-;LEM-1802 Interrupts and dimensions
 #define LEM_INT_MAPSCRN     0x0
 #define LEM_INT_MAPFONT     0x1
 #define LEM_INT_MAPPALT     0x2
 #define LEM_INT_SETBRDR     0x3
 #define LEM_INT_DMPFONT     0x4
 #define LEM_INT_DMPPALT     0x5
-
 #define LEM_WIDTH           32
 #define LEM_HEIGHT          12
-
-;Generic Clock Interrupts
 #define CLOCK_INT_SETTICK   0x0
 #define CLOCK_INT_GETTICK   0x1
 #define CLOCK_INT_TOGLINT   0x2
-
-;Generic Keyboard Interrupts
 #define KEY_INT_CLRBUFF     0x0
 #define KEY_INT_NEXTKEY     0x1
 #define KEY_INT_KEYPRSS     0x2
 #define KEY_INT_TOGLINT     0x3
-
-;MF35D Interrupts, States, Errors and specs
 #define MFD_INT_POLLDEV     0x0
 #define MFD_INT_TOGLINT     0x1
 #define MFD_INT_READSEC     0x2
 #define MFD_INT_WRITSEC     0x3
-
 #define MFD_ERR_NONE        0x0
 #define MFD_ERR_BUSY        0x1
 #define MFD_ERR_NOMEDIA     0x2
@@ -43,34 +24,25 @@
 #define MFD_ERR_EJECT       0x4
 #define MFD_ERR_BADSEC      0x5
 #define MFD_ERR_BROKEN      0xffff
-
 #define MFD_STA_NOMEDIA     0x0
 #define MFD_STA_READY       0x1
 #define MFD_STA_READYWP     0x2
-
-#define MFD_TRACKS          0x50   ;80
-#define MFD_SECPTRK         0x12   ;18
-#define MFD_TOTLSEC         0x5A0  ;1440
-#define MFD_WRDPSEC         0x200  ;512
-
-;SPED-3 Interrupts, States, and Errors
+#define MFD_TRACKS          0x50
+#define MFD_SECPTRK         0x12
+#define MFD_TOTLSEC         0x5A0
+#define MFD_WRDPSEC         0x200
 #define SPED_INT_POLLDEV    0x0
 #define SPED_INT_MAPREG     0x1
 #define SPED_INT_ROTATE     0x2
-
 #define SPED_STA_NODATA     0x0
 #define SPED_STA_RUNNING    0x1
 #define SPED_STA_TURNING    0x2
-
 #define SPED_ERR_NONE       0x0
 #define SPED_ERR_BROKEN     0xffff
-
-;SPC2000 Interrupts, Errors, and Units
 #define SPC_INT_STATUS      0x0
 #define SPC_INT_SETSKIP     0x1
 #define SPC_INT_TRIGGER     0x2
 #define SPC_INT_SETUNIT     0x3
-
 #define SPC_ERR_EVACIMD     0x0
 #define SPC_ERR_VACUUM      0x1
 #define SPC_ERR_FUEL        0x2
@@ -79,15 +51,10 @@
 #define SPC_ERR_DOORS       0x5
 #define SPC_ERR_MECHERR     0x6
 #define SPC_ERR_UNKERR      0xffff
-
 #define SPC_UNT_MILSEC      0x0
 #define SPC_UNT_MIN         0x1
 #define SPC_UNT_DAY         0x2
 #define SPC_UNT_YEAR        0x3
-
-;Display colors
-; IE CHAR_CAPA + (COLOR_FG*COLOR_CYAN) + (COLOR_BG*COLOR_LTGRAY)
-; is a Cyan "A" with a Light Gray Background
 #define BLINK				0x80
 #define COLOR_FG			0x1000
 #define COLOR_BG			0x100
@@ -107,8 +74,6 @@
 #define COLOR_LTPURP		0xD
 #define COLOR_YELLOW		0xE
 #define COLOR_WHITE			0xF
-
-;Output Characters, also some work as input characters too
 #define CHAR_PLUMN			0x04
 #define CHAR_DIV			0x05
 #define CHAR_MINUS			0x06
@@ -150,7 +115,6 @@
 #define CHAR_EQU			0x3D
 #define CHAR_GT				0x3E
 #define CHAR_QUES			0x3F
-;#define CHAR_		        0x40		WHAT???
 #define CHAR_CAPA			0x41
 #define CHAR_OSQU			0x5B
 #define CHAR_FSLSH			0x5C
@@ -164,8 +128,6 @@
 #define CHAR_CCURL			0x7D
 #define CHAR_TILDE			0x7E
 #define CHAR_DEG			0x7F
-
-;Non-printing input keys
 #define KEY_BKSP			0x10
 #define KEY_RTRN			0x11
 #define KEY_ISRT			0x12

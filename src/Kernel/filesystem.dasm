@@ -1,12 +1,3 @@
-; --------------------------------------------
-; Title:   				A FAT-16-based filesystem for DCPU-16
-; Author:  				Liraal
-; Date of creation:    	2012-08-16
-; --------------------------------------------
-
-;=============================================
-;VARIABLES
-;=============================================
 :fs_drive 		dat 0x0
 :fs_dir	  		dat 0x0
 :fs_FAT_offset	dat 0xC8
@@ -17,18 +8,9 @@
 :fs_dir_entry_end
 :fs_dir_tree	dat 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0
 :fs_dir_tree_end
-;=============================================
-;ROUTINES
-;=============================================
-
-;errors
-:fs_oom dat 0x0, 0x2345	;out of memory
+:fs_oom dat 0x0, 0x2345	
 :fs_nes	dat 0x0, 0x3456
-
-
-;I/O
-
-:fs_load_sector	;A - sector number, B - number of sectors, C - memory area to read to
+:fs_load_sector	
 set push, X
 set X, C
 set C, B
@@ -40,8 +22,7 @@ set B, C
 set C, X
 set X, pop
 set pc, pop
-
-:fs_write_sector	;A - sector number, B - number of sectors, C - memory area to write from
+:fs_write_sector	
 set push, X
 set X, C
 set C, B
@@ -53,12 +34,9 @@ set B, C
 set C, X
 set X, pop
 set pc, pop
-
-;FAT access
-
 :fs_load_FAT
 ifn [fs_FAT], 0x0
-	set pc, pop
+set pc, pop
 set push, A
 set push, B
 set push, C
@@ -66,7 +44,7 @@ set A, [fs_FAT_number]
 mul A, 0x200
 jsr mem_alloc
 ife A, 0x0
-	jsr fs_oom
+jsr fs_oom
 set C, A
 set A, [fs_FAT_offset]
 set B, [fs_FAT_number]
@@ -76,7 +54,6 @@ set C, pop
 set B, pop
 set A, pop
 set pc, pop
-
 :fs_update_FAT
 set push, A
 set push, B
@@ -93,13 +70,12 @@ set C, pop
 set B, pop
 set A, pop
 set pc, pop
-
-:fs_get_FAT_entry	;A - starting sector
+:fs_get_FAT_entry	
 set push, B
 set push, X
 set X, A
 ife [fs_FAT], 0x0
-	jsr fs_load_FAT
+jsr fs_load_FAT
 set A, [fs_FAT]
 set B, A
 add X, A
@@ -110,23 +86,22 @@ set A, X
 set X, pop
 set B, pop
 set pc, pop
-
-:fs_get_free_sector ;returns the number of the next free sector or 0x0 if none
+:fs_get_free_sector 
 set push, I
 set push, X
 ife [fs_FAT], 0x0
-	jsr fs_load_FAT
+jsr fs_load_FAT
 set A, [fs_FAT]
 set I, A
 set X, [fs_FAT_number]
 mul X, 0x200
 add X, I
 :.loop
- ife [I], 0x0
- 	set pc, .end
- add I, 0x1
- ifl I, X
-	set pc, .loop
+ife [I], 0x0
+set pc, .end
+add I, 0x1
+ifl I, X
+set pc, .loop
 set I, [fs_FAT]
 :.end
 sub I, [fs_FAT]
@@ -134,12 +109,9 @@ set A, I
 set X, pop
 set I, pop
 set pc, pop
-
-;file management
-
-:fs_create_file	;A - length in sectors
+:fs_create_file	
 ife A, 0x0
-	set pc, pop
+set pc, pop
 set push, B
 set push, X
 set X, A
@@ -153,31 +125,29 @@ jsr fs_get_free_sector
 set [B], A
 sub X, 0x1
 ifn X, 0x0
-	set pc, .loop
+set pc, .loop
 set [B], 0xFFFF
 jsr fs_update_FAT
 set A, pop
 set X, pop
 set B, pop
 set pc, pop
-
-:fs_get_file_length	;A - starting cluster
+:fs_get_file_length	
 set push, I
 set I, 0x0
 :.loop
 jsr fs_get_FAT_entry
 ife A, 0x0
-	set pc, .end
+set pc, .end
 add I, 0x1
 ifn A, 0xFFFF
-	ifl I, 0x5A0
-		set pc, .loop
+ifl I, 0x5A0
+set pc, .loop
 .end
 set A, I
 set I, pop
 set pc, pop
-
-:fs_load_file	;A - starting cluster (as always)
+:fs_load_file	
 set push, B
 set push, C
 set push, I
@@ -190,7 +160,7 @@ set push, A
 mul A, 0x200
 jsr mem_alloc
 ife A, 0x0
-	dat 0
+dat 0
 set X, A
 set A, Y
 :.loop
@@ -203,8 +173,8 @@ add X, 0x200
 jsr fs_get_FAT_entry
 add I, 0x1
 ifn A, 0xFFFF
-	ifl I, 0x5A0
-		set pc, .loop
+ifl I, 0x5A0
+set pc, .loop
 set A, pop
 mul A, 0x200
 sub X, A
@@ -216,8 +186,7 @@ set I, pop
 set C, pop
 set B, pop
 set pc, pop
-
-:fs_edit_file	;A - starting cluster (as always), X - memory area to read from
+:fs_edit_file	
 set push, A
 set push, B
 set push, C
@@ -237,8 +206,8 @@ sub A, [fs_root_offset]
 jsr fs_get_FAT_entry
 add X, 0x200
 ifn A, 0xFFFF
-	ifl X, Y
-		set pc, .loop
+ifl X, Y
+set pc, .loop
 jsr fs_update_FAT
 set Y, pop
 set X, pop
@@ -246,8 +215,7 @@ set C, pop
 set B, pop
 set A, pop
 set pc, pop
-
-:fs_delete_file	;A - starting cluster
+:fs_delete_file	
 set push, A
 set push, B
 :.loop
@@ -256,84 +224,82 @@ jsr fs_get_FAT_entry
 add B, [fs_FAT]
 set [B], 0x0
 ifn A, 0xFFFF
-	set pc, .loop
+set pc, .loop
 set B, pop
 set A, pop
 jsr fs_update_FAT
 set pc, pop
-
-:fs_resize_file	;A - starting cluster, B - new length
+:fs_resize_file	
 ife B, 0x0
-	set pc, fs_delete_file
+set pc, fs_delete_file
 set push, A
 jsr fs_get_file_length
 ifl A, B
-	set pc, .extend
+set pc, .extend
 ifg A, B
-	set pc, .shrink
+set pc, .shrink
 set A, pop
 set pc, pop
- .shrink
- 	set A, peek
-	set push, C
-	set push, I
-	set I, 0x1
-  .shrink_loop
-	set C, A
-	jsr fs_get_FAT_entry
-	add C, [fs_FAT]
-	ife I, B
-		set [C], 0xFFFF
-	ifg I, B
-		set [C], 0x0
-	add I, 0x1
-	ifn A, 0xFFFF
-		set pc, .shrink_loop
-	jsr fs_update_FAT
-	set I, pop
-	set C, pop
-	set A, pop
+.shrink
+set A, peek
+set push, C
+set push, I
+set I, 0x1
+.shrink_loop
+set C, A
+jsr fs_get_FAT_entry
+add C, [fs_FAT]
+ife I, B
+set [C], 0xFFFF
+ifg I, B
+set [C], 0x0
+add I, 0x1
+ifn A, 0xFFFF
+set pc, .shrink_loop
+jsr fs_update_FAT
+set I, pop
+set C, pop
+set A, pop
 set pc, pop
- .extend
- 	set A, peek
- 	set push, C
- 	set push, I
- 	set I, 0x1
-   .extend_loop
-   	set C, A
-   	jsr fs_get_FAT_entry
-   	add C, [fs_FAT]
-   	ifl I, B
-   		ifn A, 0xFFFF
-   			ifn A, 0x0
-   				set pc, .extend_loop_end
-   	set push, A
-   	set [C], 0xFFFF
-   	jsr fs_get_free_sector
-   	ife peek, 0xFFFF
-   		set peek, A
-   	ife peek, 0x0
-   		set peek, A
-   	ife A, 0x0
-   		set pc, .extend_end
-   	set [C], A
-   	ife I, B
-   		set [C], 0xFFFF
-   	ife I, B
-		set peek, 0xFFFF   	
-   	set A, pop
-   	.extend_loop_end
-   	add I, 0x1
-   	ifn A, 0xFFFF
-   		set pc, .extend_loop
-   	.extend_end
-   	jsr fs_update_FAT
-   	set I, pop
-   	set C, pop
-   	set A, pop
+.extend
+set A, peek
+set push, C
+set push, I
+set I, 0x1
+.extend_loop
+set C, A
+jsr fs_get_FAT_entry
+add C, [fs_FAT]
+ifl I, B
+ifn A, 0xFFFF
+ifn A, 0x0
+set pc, .extend_loop_end
+set push, A
+set [C], 0xFFFF
+jsr fs_get_free_sector
+ife peek, 0xFFFF
+set peek, A
+ife peek, 0x0
+set peek, A
+ife A, 0x0
+set pc, .extend_end
+set [C], A
+ife I, B
+set [C], 0xFFFF
+ife I, B
+set peek, 0xFFFF   	
+set A, pop
+.extend_loop_end
+add I, 0x1
+ifn A, 0xFFFF
+set pc, .extend_loop
+.extend_end
+jsr fs_update_FAT
+set I, pop
+set C, pop
+set A, pop
 set pc, pop
-
-:fs_file_set_metadata	;A - starting cluster, B - address of metadata
+:fs_file_set_metadata	
 set push, X
 set push, C
 set push, B
@@ -342,7 +308,7 @@ set X, B
 set A, 0x200
 jsr mem_alloc
 ife A, 0x0
-	dat 0x0
+dat 0x0
 set C, A
 set A, peek
 set B, 0x1
@@ -363,8 +329,7 @@ set B, pop
 set C, pop
 set X, pop
 set pc, pop
-
-:fs_file_get_metadata	;A - starting cluster, output: A - address of metadata
+:fs_file_get_metadata	
 set push, X
 set push, C
 set push, B
@@ -373,7 +338,7 @@ set X, B
 set A, 0x200
 jsr mem_alloc
 ife A, 0x0
-	dat 0x0
+dat 0x0
 set C, A
 set A, peek
 set B, 0x1
@@ -390,10 +355,7 @@ set B, pop
 set C, pop
 set X, pop
 set pc, pop
-
-;dir management
-
-:fs_get_dir_entry	;A - guess what? starting cluster, B - number of the entry
+:fs_get_dir_entry	
 jsr fs_load_file
 set push, I
 set push, J
@@ -405,14 +367,13 @@ set I, fs_dir_entry
 :.loop
 sti [I], [J]
 ifn I, fs_dir_entry_end
-	set pc, .loop
+set pc, .loop
 jsr mem_free
 set A, fs_dir_entry
 set J, pop
 set I, pop
 set pc, pop
-
-:fs_get_free_dir_entry	;A - cluster output: A - number of entry or 0xFFFF if none
+:fs_get_free_dir_entry	
 set push, I
 set push, J
 set push, X
@@ -432,15 +393,15 @@ set A, 0x0
 :.loop2
 add I, 0x1
 ife I, 0x10
-	set pc, .end
+set pc, .end
 add X, 0x1
 ife [X], 0x0
-	set pc, .loop2
+set pc, .loop2
 add A, 0x1
 set I, 0x0
 add X, 0x10
 ifn X, J
-	set pc, .loop
+set pc, .loop
 set A, Y
 jsr mem_free
 set Y, pop
@@ -459,8 +420,7 @@ set X, pop
 set J, pop
 set I, pop
 set pc, pop
-
-:fs_add_dir_entry	;A - cluster, B - address
+:fs_add_dir_entry	
 set push, B
 set push, C
 set push, X
@@ -482,7 +442,7 @@ set [X], [B]
 add X, 0x1
 add B, 0x1
 ifn X, Y
-	set pc, .loop
+set pc, .loop
 set A, C
 set X, pop
 jsr fs_edit_file
@@ -495,8 +455,7 @@ set X, pop
 set C, pop
 set B, pop
 set pc, pop
-
-:fs_remove_dir_entry ;A - cluster B - number of the entry
+:fs_remove_dir_entry 
 set push, A
 set push, B
 set push, X
@@ -512,7 +471,7 @@ add A, 0x10
 set [X], 0x0
 add X, 0x1
 ifn X, A
-	set pc, .loop
+set pc, .loop
 set X, pop
 set A, pop
 jsr fs_edit_file
@@ -522,10 +481,7 @@ set X, pop
 set B, pop
 set A, pop
 set pc, pop
-
-;advanced fs routines
-
-:fs_mkfile ;A - address of filename (regular 11-char word), B- file size in clusters, output: A - number of the entry in current dir
+:fs_mkfile 
 set push, I
 set push, J
 set push, B
@@ -552,8 +508,7 @@ set B, pop
 set J, pop
 set I, pop
 set pc, pop
-
-:fs_mkdir ;A - address of dir name (converted to 5-word), B- dir size in clusters, output: A - number of the entry in current dir
+:fs_mkdir 
 set push, I
 set push, J
 set push, B
@@ -563,11 +518,11 @@ set J, fs_dir_entry
 sti [J], [A]
 add A, 0x1
 ifl i, 0x5
-	set pc, .loop
+set pc, .loop
 set [J], 0x0
 add J, 0x1
 set [J], 0x10
-add J, 0x6 ;skipping the datetime, for we have no clock in yet
+add J, 0x6 
 set A, B
 jsr fs_create_file
 set push, A
@@ -585,8 +540,7 @@ set B, pop
 set J, pop
 set I, pop
 set pc, pop
-
-:fs_find_entry_by_name ;A - name as 11-word, output: A - entry number or 0xFFFF if none
+:fs_find_entry_by_name 
 set push, I
 set push, C
 set push, B
@@ -596,22 +550,22 @@ set A, [fs_dir]
 jsr fs_load_file
 set push, A
 set I, 0x0
- .loop
- set push, A
- set B, fs_dir_entry
- set C, 0x5
- jsr fs_util_compare
- ife A, 0x0
-  set pc, .end
- set A, peek
- set B, 0x5
- jsr fs_util_isnull
- set C, A
- set A, pop
- add A, 0x10
- add I, 0x1
- ifn C, 0x0
-  set pc, .loop
+.loop
+set push, A
+set B, fs_dir_entry
+set C, 0x5
+jsr fs_util_compare
+ife A, 0x0
+set pc, .end
+set A, peek
+set B, 0x5
+jsr fs_util_isnull
+set C, A
+set A, pop
+add A, 0x10
+add I, 0x1
+ifn C, 0x0
+set pc, .loop
 set A, pop
 jsr mem_free
 set B, pop
@@ -628,14 +582,13 @@ set B, pop
 set C, pop
 set I, pop
 set pc, pop
-
-:fs_cd	;A - name as 11word or all zeros to back up
+:fs_cd	
 set push, B
 set push, A
 set B, 0xB
 jsr fs_util_isnull
 ife A, 0x0
-	set pc, .back
+set pc, .back
 set A, pop
 jsr fs_find_entry_by_name
 jsr fs_dir_push
@@ -646,34 +599,30 @@ jsr fs_dir_pop
 set A, pop
 set B, pop
 set pc, pop
-
-;dir tree exploration
-
-:fs_dir_push	;A - a dir to move to
+:fs_dir_push	
 set push, I
 set I, fs_dir_tree
 .loop
- ife [I], 0x0
- 	set pc, .end
- add I, 0x1
- ifn I, fs_dir_tree_end
- 	set pc, .loop
+ife [I], 0x0
+set pc, .end
+add I, 0x1
+ifn I, fs_dir_tree_end
+set pc, .loop
 set I, fs_dir_tree
 .end
 set [I], A
 jsr fs_dir_update
 set I, pop
 set pc, pop
-
-:fs_dir_pop	;output: A - startng cluster of current dir before popping
+:fs_dir_pop	
 set push, I
 set I, fs_dir_tree_end
 .loop
-	ifn [I], 0x0
-		set pc, .end
-	sub I, 0x1
-	ifn I, fs_dir_tree
-		set pc, .loop
+ifn [I], 0x0
+set pc, .end
+sub I, 0x1
+ifn I, fs_dir_tree
+set pc, .loop
 set A, 0x0
 set I, pop
 set pc, pop
@@ -682,32 +631,29 @@ set [I], 0x0
 jsr fs_dir_update
 set I, pop
 set pc, pop
-
-:fs_dir_peek	;output: A - starting cluster of current dir
+:fs_dir_peek	
 set push, I
 set I, fs_dir_tree_end
 .loop
-	ifn [I], 0x0
-		set pc, .end
-	sub I, 0x1
-	ifn I, fs_dir_tree
-		set pc, .loop
+ifn [I], 0x0
+set pc, .end
+sub I, 0x1
+ifn I, fs_dir_tree
+set pc, .loop
 set A, 0x0
 set I, pop
 set pc, pop
 set A, [I]
 set I, pop
 set pc, pop
-
-:fs_dir_update	;refresh the fs_dir pointer
+:fs_dir_update	
 set push, A
 jsr fs_dir_peek
 set [fs_dir], A
 set A, pop
 set pc, pop
-	
-;additional routines
-:fs_to6word		;input: A - address of a 12 char long word. B - address of a 6 word long memory area to store the result
+
+:fs_to6word		
 set push, C
 set push, I
 set push, J
@@ -723,12 +669,11 @@ bor [J], [I]
 add I, 0x1
 add J, 0x1
 ifn J, C
-	set pc, .loop
+set pc, .loop
 set J, pop
 set I, pop
 set C, pop
 set pc, pop
-
 :fs_to12word
 set push, C
 set push, I
@@ -747,65 +692,61 @@ and [J], 0xFF
 add J, 0x1
 add I, 0x1
 ifn C, I
-	set pc, .loop
+set pc, .loop
+set J, pop
+set I, pop
+set C, pop
+set pc, pop
+:fs_util_compare 
+set push, B
+set push, I
+set I, 0x0
+:fs_util_compare_loop
+ifn [A], [B]
+set pc, fs_util_compare_end
+add A, 0x1
+add B, 0x1
+add I, 0x1
+ifn I, C
+set pc, fs_util_compare_loop
+set I, pop
+set B, pop
+set A, 0x0
+set pc, pop
+:fs_util_compare_end
+set I, pop
+set B, pop
+set A, 0xFFFF
+set pc, pop
+:fs_util_assign 
+set push, C
+set push, I
+set push, J
+set I, A
+set J, B
+add C, I
+:fs_util_assign_loop
+sti [I], [J]
+ifn I, C
+set pc, fs_util_assign_loop
 set J, pop
 set I, pop
 set C, pop
 set pc, pop
 
- :fs_util_compare ;A, B; C
- set push, B
- set push, I
- set I, 0x0
-  :fs_util_compare_loop
-  ifn [A], [B]
-	set pc, fs_util_compare_end
-  add A, 0x1
-  add B, 0x1
-  add I, 0x1
-  ifn I, C
-  	set pc, fs_util_compare_loop
-  set I, pop
-  set B, pop
-  set A, 0x0
-  set pc, pop
-  :fs_util_compare_end
-  set I, pop
-  set B, pop
-  set A, 0xFFFF
-  set pc, pop
-
- :fs_util_assign ;A, B; C
- set push, C
- set push, I
- set push, J
- set I, A
- set J, B
- add C, I
-  :fs_util_assign_loop
-  sti [I], [J]
-  ifn I, C
-  	set pc, fs_util_assign_loop
- set J, pop
- set I, pop
- set C, pop
- set pc, pop
- 
- :fs_util_isnull ;A ; B
- set push, B
- add B, A
- :fs_util_isnull_loop
- ifn [A], 0x0
- 	set pc, fs_util_isnull_end
- add A, 0x1
- ifn A, B
-  set pc, fs_util_isnull_loop
- set A, 0x0
- set B, pop
- set pc, pop
- :fs_util_isnull_end
- set A, 0xFFFF
- set B, pop
- set pc, pop
-
- 
+:fs_util_isnull 
+set push, B
+add B, A
+:fs_util_isnull_loop
+ifn [A], 0x0
+set pc, fs_util_isnull_end
+add A, 0x1
+ifn A, B
+set pc, fs_util_isnull_loop
+set A, 0x0
+set B, pop
+set pc, pop
+:fs_util_isnull_end
+set A, 0xFFFF
+set B, pop
+set pc, pop
