@@ -1,320 +1,220 @@
-; --------------------------------------------
-; Title:   lib_STDIO
-; Author:  Alex
-; Date:    8/24/2012
-; Version: 0.6
-; --------------------------------------------
-
-; From the spec
-;
-;The Goal of the STDIO library is as follows:
-;
-;Enable extremely flexible and fast Input and Output system
-;Allow programs easy access to screen, keyboard, and FS access
-;Implement security against bad programs
-;Make the Implemtation completely independant of programs, for easy modification
-
-
-;@name lib_STDIO_init
-;Performs hardware detection of LEM1802 and Generic Keyboard,
-;saves HW id, and turns on LEM1802
-;@destroys A,B,C,J,X,Y
-;@see thePalindrome
 :lib_STDIO_init
-    HWN J
-    :lib_STDIO_initLoop
-        ;loop to find LEM1802, SPED-3, and Generic Keyboard
-        HWQ J
-        IFE B, 0x30CF
-            IFE A, 0x7406 
-                JSR lib_STDIO_initKeyboard
-        IFE B, 0x7349
-            IFE A, 0xF615 
-                JSR lib_STDIO_initScreen
-        IFE B, 0xBF3C
-            IFE A, 0x42BA
-                JSR lib_STDIO_initProjector
-        SUB J, 1
-        IFA J, -1
-            SET PC, lib_STDIO_initLoop
-        SET PC, lib_STDIO_initLoopEnd
-    :lib_STDIO_initScreen
-    ;Save HW id of monitor, then turn on with buffer at 0x8000
-    SET [lib_STDIO_monitorID], J
-    SET A, 0
-    SET B, 0x8000
-    HWI J
-    SET PC, POP
-    :lib_STDIO_initKeyboard
-    ;Save HW id of keyboard
-    SET [lib_STDIO_KeyboardID], J
-    SET PC, POP
-    :lib_STDIO_initProjector
-    ;Save HW id of projector
-    SET [lib_STDIO_ProjectorID], J
-    SET PC, POP
-    :lib_STDIO_initLoopEnd
-    ;Set bounds for monitor buffer
-    SET [lib_STDIO_MonitorPos], 0x8000
-    SET [lib_STDIO_MonitorStart], [lib_STDIO_MonitorPos]
-    SET [lib_STDIO_MonitorEnd], [lib_STDIO_MonitorPos]
-    ADD [lib_STDIO_MonitorEnd], 386
-    SET PC, POP
-
-;@name lib_STDIO_getChar
-;Allocates a buffer size B at return A, with Input A designating blocking mode
-;@params A 
-;@params B 
-;@returns A 
-;@destroys C
-;@see thePalindrome
+HWN J
+:lib_STDIO_initLoop
+HWQ J
+IFE B, 0x30CF
+IFE A, 0x7406 
+JSR lib_STDIO_initKeyboard
+IFE B, 0x7349
+IFE A, 0xF615 
+JSR lib_STDIO_initScreen
+IFE B, 0xBF3C
+IFE A, 0x42BA
+JSR lib_STDIO_initProjector
+SUB J, 1
+IFA J, -1
+SET PC, lib_STDIO_initLoop
+SET PC, lib_STDIO_initLoopEnd
+:lib_STDIO_initScreen
+SET [lib_STDIO_monitorID], J
+SET A, 0
+SET B, 0x8000
+HWI J
+SET PC, POP
+:lib_STDIO_initKeyboard
+SET [lib_STDIO_KeyboardID], J
+SET PC, POP
+:lib_STDIO_initProjector
+SET [lib_STDIO_ProjectorID], J
+SET PC, POP
+:lib_STDIO_initLoopEnd
+SET [lib_STDIO_MonitorPos], 0x8000
+SET [lib_STDIO_MonitorStart], [lib_STDIO_MonitorPos]
+SET [lib_STDIO_MonitorEnd], [lib_STDIO_MonitorPos]
+ADD [lib_STDIO_MonitorEnd], 386
+SET PC, POP
 :lib_STDIO_getChar
-    ; INPUT: B, A
-    ; OUTPUT: A
-    ; DESC: If A == 0, return ASAP, returns B characters starting with address A
-    ; NOTE: A will be 0 if getChar fails!
-    ; NOTE: Caller is responsible for freeing memory!
-    SET C, A
-    SET A, B
-    JSR mem_alloc
-    IFE A, 0
-        SET PC, POP
-    SET PUSH, Z
-    SET PUSH, Y
-    SET PUSH, X
-    SET PUSH, I
-    SET X, C
-    SET Z, A
-    SET Y, A
-    SET I, 0
-    :lib_STDIO_getCharLoop
-        SET A, 1
-        HWI [lib_STDIO_KeyboardID]
-        IFE C, 0
-            IFN X, 0
-                SET PC, lib_STDIO_getCharLoop
-        IFE C, 0x0010
-            IFL Y, Z
-                SUB Z, 0x0001
-        SET [Z], C
-        ADD Z, 0x0001
-        IFE C, 0
-            SET PC, lib_STDIO_getCharLoopEnd
-        ADD I, 1
-        IFN I, B
-            SET PC, lib_STDIO_getCharLoop
-    :lib_STDIO_getCharLoopEnd
-    SET I, POP
-    SET X, POP
-    SET A, Y
-    SET Y, POP
-    SET Z, POP
-    SET PC, POP
-        
-;@name lib_STDIO_print
-;Prints a number of characters, in the chosen color, from a memory location
-;@params [A] Pointer to memory location of first character to print
-;@params B Number of characters to print
-;@params C Color to print in (Foreground<<12)+(Background<<8)
-;@see thePalindrome
+SET C, A
+SET A, B
+JSR mem_alloc
+IFE A, 0
+SET PC, POP
+SET PUSH, Z
+SET PUSH, Y
+SET PUSH, X
+SET PUSH, I
+SET X, C
+SET Z, A
+SET Y, A
+SET I, 0
+:lib_STDIO_getCharLoop
+SET A, 1
+HWI [lib_STDIO_KeyboardID]
+IFE C, 0
+IFN X, 0
+SET PC, lib_STDIO_getCharLoop
+IFE C, 0x0010
+IFL Y, Z
+SUB Z, 0x0001
+SET [Z], C
+ADD Z, 0x0001
+IFE C, 0
+SET PC, lib_STDIO_getCharLoopEnd
+ADD I, 1
+IFN I, B
+SET PC, lib_STDIO_getCharLoop
+:lib_STDIO_getCharLoopEnd
+SET I, POP
+SET X, POP
+SET A, Y
+SET Y, POP
+SET Z, POP
+SET PC, POP
 :lib_STDIO_print
-    SET PUSH, I
-    ADD B, A
-    :lib_STDIO_printLoop
-        IFE [A], 0x0010
-            SET PC, lib_STDIO_printLoopBack
-        IFE [A], 0x0011
-            JSR lib_STDIO_enter
-        IFE [A], 0x0011
-            SET PC, lib_STDIO_printLoopCont
-        SET PC, lib_STDIO_printLoopPrint
-        :lib_STDIO_printLoopBack
-            SUB [lib_STDIO_MonitorPos], 1
-            SET I, [lib_STDIO_MonitorPos]
-            SET [I], 0
-            SET PC, lib_STDIO_printLoopCont
-        :lib_STDIO_printLoopPrint
-            BOR [A], C
-            SET I, [lib_STDIO_MonitorPos]
-            SET [I], [A]
-            ADD [lib_STDIO_MonitorPos], 1
-        :lib_STDIO_printLoopCont
-        IFE [lib_STDIO_MonitorPos], [lib_STDIO_MonitorEnd]
-            JSR lib_STDIO_scroll
-        ADD A, 1
-        IFN A, B
-            SET PC, lib_STDIO_printLoop
-    :lib_STDIO_printEnd
-    SET I, POP
-    SET PC, POP
-
-;@name lib_STDIO_scroll
-;Scroll the text on the screen up 1 line?
-;@see thePalindrome
+SET PUSH, I
+ADD B, A
+:lib_STDIO_printLoop
+IFE [A], 0x0010
+SET PC, lib_STDIO_printLoopBack
+IFE [A], 0x0011
+JSR lib_STDIO_enter
+IFE [A], 0x0011
+SET PC, lib_STDIO_printLoopCont
+SET PC, lib_STDIO_printLoopPrint
+:lib_STDIO_printLoopBack
+SUB [lib_STDIO_MonitorPos], 1
+SET I, [lib_STDIO_MonitorPos]
+SET [I], 0
+SET PC, lib_STDIO_printLoopCont
+:lib_STDIO_printLoopPrint
+BOR [A], C
+SET I, [lib_STDIO_MonitorPos]
+SET [I], [A]
+ADD [lib_STDIO_MonitorPos], 1
+:lib_STDIO_printLoopCont
+IFE [lib_STDIO_MonitorPos], [lib_STDIO_MonitorEnd]
+JSR lib_STDIO_scroll
+ADD A, 1
+IFN A, B
+SET PC, lib_STDIO_printLoop
+:lib_STDIO_printEnd
+SET I, POP
+SET PC, POP
 :lib_STDIO_scroll
-    ; INPUT: NONE
-    ; OUTPUT: NONE
-    ; DESC: Helper function, scrolls the screen
-    SET PUSH, X
-    SET PUSH, Y
-    SET PUSH, A
-    SET X, [lib_STDIO_MonitorStart]
-    SET Y, 0x20
-    ADD Y, X
-    :lib_STDIO_scrollLoopOne
-        SET [X], [Y]
-        ADD X, 1
-        ADD Y, 1
-        IFG Y, [lib_STDIO_MonitorEnd]
-            SET PC, lib_STDIO_scrollLoopTwo
-        SET PC, lib_STDIO_scrollLoopOne
-        :lib_STDIO_scrollLoopTwo
-            SET A, 0
-            SET [X], A
-            ADD X, 1
-            IFG X, [lib_STDIO_MonitorEnd]
-                SET PC, lib_STDIO_scrollEnd
-            SET PC, lib_STDIO_scrollLoopTwo
-    :lib_STDIO_scrollEnd
-        SUB [lib_STDIO_MonitorPos], 0x20
-        SET A, POP
-        SET Y, POP
-        SET X, POP
-        SET PC, POP
-
-;@name lib_STDIO_enter
-;Moves the position of the next character to the next line
-;@see thePalindrome
+SET PUSH, X
+SET PUSH, Y
+SET PUSH, A
+SET X, [lib_STDIO_MonitorStart]
+SET Y, 0x20
+ADD Y, X
+:lib_STDIO_scrollLoopOne
+SET [X], [Y]
+ADD X, 1
+ADD Y, 1
+IFG Y, [lib_STDIO_MonitorEnd]
+SET PC, lib_STDIO_scrollLoopTwo
+SET PC, lib_STDIO_scrollLoopOne
+:lib_STDIO_scrollLoopTwo
+SET A, 0
+SET [X], A
+ADD X, 1
+IFG X, [lib_STDIO_MonitorEnd]
+SET PC, lib_STDIO_scrollEnd
+SET PC, lib_STDIO_scrollLoopTwo
+:lib_STDIO_scrollEnd
+SUB [lib_STDIO_MonitorPos], 0x20
+SET A, POP
+SET Y, POP
+SET X, POP
+SET PC, POP
 :lib_STDIO_enter
-    SET PUSH, J
-    SET PUSH, A
-    SET A, [lib_STDIO_MonitorPos]
-    SET J, A
-    MOD J, 0x0020
-    SUB A, J
-    ADD A, 0x0020
-    IFG A, [lib_STDIO_MonitorEnd]
-        SET A, [lib_STDIO_MonitorStart]
-    SET [lib_STDIO_MonitorPos], A
-    IFG A, [lib_STDIO_MonitorEnd]
-        JSR lib_STDIO_scroll
-    SET A, POP
-    SET J, POP
-    SET PC, POP
-    
-;@name lib_STDIO_SPED3_PUSH
-;Takes the X,Y,Z, and color, and adds it to the vertex stack
-;@params X the X co-ord of the vertex
-;@params Y the Y co-ord of the vertex
-;@params Z the Z co-ord of the vertex
-;@params C the color of the vertex, with 1 as red, 2 as green, 3 as blue, with bit 3 being intensity
-;@returns C Which position in the stack the vertex is
-;@see thePalindrome
-;NOTE, DO NOT USE, STACK ISN'T REAL!
+SET PUSH, J
+SET PUSH, A
+SET A, [lib_STDIO_MonitorPos]
+SET J, A
+MOD J, 0x0020
+SUB A, J
+ADD A, 0x0020
+IFG A, [lib_STDIO_MonitorEnd]
+SET A, [lib_STDIO_MonitorStart]
+SET [lib_STDIO_MonitorPos], A
+IFG A, [lib_STDIO_MonitorEnd]
+JSR lib_STDIO_scroll
+SET A, POP
+SET J, POP
+SET PC, POP
 :lib_STDIO_SPED3_PUSH
-    SET PUSH, A
-    SET A, 0
-    JSR lib_STDIO_SPED3_PUT
-    SET A, POP
-    SET C, [lib_STDIO_Projector_StackPos]
-    SUB C, lib_STDIO_Projector_Stack
-    SUB C, 2
-    DIV C, 2
-    SET PC, POP
-    
-;@name lib_STDIO_SPED3_PUT
-;Helper function, actually modifies the vertex stack
-;@params A the vertex to edit, 0 being the top
-;@params X the X co-ord of the vertex
-;@params Y the Y co-ord of the vertex
-;@params Z the Z co-ord of the vertex
-;@params C the color of the vertex, with 1 as red, 2 as green, 3 as blue, with bit 3 being intensity
-;@see thePalindrome
-;NOTE, DO NOT USE, STACK ISN'T REAL!
+SET PUSH, A
+SET A, 0
+JSR lib_STDIO_SPED3_PUT
+SET A, POP
+SET C, [lib_STDIO_Projector_StackPos]
+SUB C, lib_STDIO_Projector_Stack
+SUB C, 2
+DIV C, 2
+SET PC, POP
 :lib_STDIO_SPED3_PUT
-    SET PUSH, B
-    SET B, 0
-    IFE A, 0
-        ADD PC, 5
-    MUL A, 2
-    ADD A, 2
-    ADD C, lib_STDIO_Projector_Stack
-    ADD PC, 4
-    
-    ;SET A to the top vertex
-    SET A, [lib_STDIO_Projector_StackPos]
-    SUB A, 2
-    SET B, 1
-   
-    
-    SET PUSH, Y
-    SHL Y, 8
-    ADD Y, X
-    SET [A], Y
-    IFE B, 0
-        ADD PC, 3
-    ADD [lib_STDIO_Projector_StackPos], 1
-    ADD PC, 1
-    
-    ADD A, 1
-    
-    SET Y, POP
-    SHL C, 8
-    ADD C, Z
-    SET [A], C
-    IFE B, 0
-        ADD PC, 3
-    ADD [lib_STDIO_Projector_StackPos], 1
-    ADD PC, 1
-    
-    ADD A, 1
-    
-    SET B, POP
-    SET PUSH, X
-    SET PUSH, Y
-    SET X, lib_STDIO_Projector_Stack
-    SET Y, [lib_STDIO_Projector_StackPos]
-    SUB Y, lib_STDIO_Projector_Stack
-    SUB Y, 2
-    DIV Y, 2
-    SET A, 1
-    HWI [lib_STDIO_ProjectorID]
-    SET Y, POP
-    SET X, POP
-    SET PC, POP
-    
-;@name lib_STDIO_SPED3_GET
-;Gets vertex C, if C is 0, return the top vertex
-;@params C vertex to get
-;@returns X the X co-ord of the vertex
-;@returns Y the Y co-ord of the vertex
-;@returns Z the Z co-ord of the vertex
-;@retruns C the color of the vertex, with 1 as red, 2 as green, 3 as blue, with bit 3 being intensity
-;@see thePalindrome
-;NOTE, DO NOT USE, STACK ISN'T REAL!
+SET PUSH, B
+SET B, 0
+IFE A, 0
+ADD PC, 5
+MUL A, 2
+ADD A, 2
+ADD C, lib_STDIO_Projector_Stack
+ADD PC, 4
+SET A, [lib_STDIO_Projector_StackPos]
+SUB A, 2
+SET B, 1
+SET PUSH, Y
+SHL Y, 8
+ADD Y, X
+SET [A], Y
+IFE B, 0
+ADD PC, 3
+ADD [lib_STDIO_Projector_StackPos], 1
+ADD PC, 1
+ADD A, 1
+SET Y, POP
+SHL C, 8
+ADD C, Z
+SET [A], C
+IFE B, 0
+ADD PC, 3
+ADD [lib_STDIO_Projector_StackPos], 1
+ADD PC, 1
+ADD A, 1
+SET B, POP
+SET PUSH, X
+SET PUSH, Y
+SET X, lib_STDIO_Projector_Stack
+SET Y, [lib_STDIO_Projector_StackPos]
+SUB Y, lib_STDIO_Projector_Stack
+SUB Y, 2
+DIV Y, 2
+SET A, 1
+HWI [lib_STDIO_ProjectorID]
+SET Y, POP
+SET X, POP
+SET PC, POP
 :lib_STDIO_SPED3_GET
-    IFE C, 0
-        ADD PC, 5
-    MUL C, 2
-    ADD C, 2
-    ADD C, lib_STDIO_Projector_Stack
-    ADD PC, 3
-    
-    ;SET C to the top vertex
-    SET C, [lib_STDIO_Projector_StackPos]
-    SUB C, 2
-    
-    SET X, [C]
-    BOR X, 0x00FF
-    SET Y, [C]
-    SHR Y, 8
-    ADD C, 1
-    SET Z, [C]
-    BOR Z, 0x00FF
-    SET C, [C]
-    SHR C, 8
-    SET PC, POP
-    
+IFE C, 0
+ADD PC, 5
+MUL C, 2
+ADD C, 2
+ADD C, lib_STDIO_Projector_Stack
+ADD PC, 3
+SET C, [lib_STDIO_Projector_StackPos]
+SUB C, 2
+SET X, [C]
+BOR X, 0x00FF
+SET Y, [C]
+SHR Y, 8
+ADD C, 1
+SET Z, [C]
+BOR Z, 0x00FF
+SET C, [C]
+SHR C, 8
+SET PC, POP
 :lib_STDIO_KeyboardID dat 0x0000
 :lib_STDIO_MonitorPos dat 0x0000
 :lib_STDIO_MonitorEnd dat 0x0000

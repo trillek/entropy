@@ -1,44 +1,8 @@
-;by: Lucus
-
-;TODO:
-; - Test if it all works like it's supposed to...
-
-;INTERRUPT MANAGER supports up to 16 processes
-
-;Implements dynamic interrupt handling for kernel and processes, also implements communication through signals.
-
-;FUNCTIONS:
-
-;fn_request_handler ;Arguments: A=signal handler address, Return: A=interrupt to be used or -1 if no space
-;requests a handler to be used by a piece of hardware. KERNEL-ONLY. Make sure [current_process]=0
-
-;fn_request_handler ;Arguments: A=signal to be sent, Return: A=interrupt to be used or -1 if no space
-;requests a handler to be used by a piece of hardware. PROCESS-ONLY
-
-;fn_free_handler ;Arguments: A=interrupt to be freed, Return: None
-;frees the handler for interrupt A, allowing it to be reused
-
-;fn_set_signal_handler ;Arguments: A=signal handler location, Return: None
-;sets the signal handler for current_process
-
-;fn_send_signal ;Arguments: A=target process, B=signal to be sent, Return: A=0 on success, errno on failure
-;Sends a signal to process A with message B
-
-;fn_init_IM ;Arguments: None, Return: None.
-;initiates the interrupt manager
-
-;fn_check_signals ;Arguments: None, Return: None.
-;check for signals at start of runningtime of current_process
-
-;signal handlers get JSRd to with Arguments: A=signal number, B=signal sender
-
-;DEFINES:
-#define max_proc_num			16		;changing these will break the code
+#define max_proc_num			16		
 #define sigs_per_proc			16
-#define ERR_missed_interrupts	0x0104	;semi-random for now
-#define ERR_signal_queue_full	0x0105	;
-
-:fn_request_handler_k ;Arguments: A=signal handler address, Return: A=interrupt to be used or -1 if no space
+#define ERR_missed_interrupts	0x0104	
+#define ERR_signal_queue_full	0x0105	
+:fn_request_handler_k 
 set push, b
 iaq 1
 set b, interrupt_header_start
@@ -52,21 +16,19 @@ set pc, .loop_a
 :.found_space
 set [b], 0
 set [b+1], a
-add pc, 1 ;skip set a, -1
+add pc, 1 
 :.no_space
 set a, -1
 iaq 0
 set b, pop
 set pc, pop
-
-:fn_free_handler ;Arguments: A=interrupt to be freed, Return: None
-shl a, 1 ;mul a, 2
+:fn_free_handler 
+shl a, 1 
 add a, interrupt_header_start
 set [a], -1
 set [a+1], -1
 set pc, pop
-
-:fn_request_handler ;Arguments: A=signal to be sent, Return: A=interrupt to be used or -1 if no space
+:fn_request_handler 
 set push, b
 iaq 1
 set b, interrupt_header_start
@@ -82,29 +44,25 @@ set [b], [current_process]
 set [b+1], a
 set a, b
 sub a, interrupt_header_start
-shr a, 1 ;div a, 2
-add pc, 1 ;skip set a, -1
+shr a, 1 
+add pc, 1 
 :.no_space
 set a, -1
 iaq 0
 set b, pop
 set pc, pop
-
-;Sets the signal handler for the current process
-:fn_set_signal_handler ;Arguments: A=signal handler location, Return: None
+:fn_set_signal_handler 
 set push, b
 set b, [current_process]
 add b, signal_handler_table_start
 set [b], a
 set b, pop
 set pc, pop
-
-;Initiates the interrupt manager
-:fn_init_IM ;Arguments: None, Return: None.
+:fn_init_IM 
 set push, i
 set push, j
 ias interrupt_address
-set i, interrupt_header_start ;initiate interrupt header to -1
+set i, interrupt_header_start 
 :.loop_a
 sti [i], -1
 sti [i], -1
@@ -115,8 +73,7 @@ set pc, .loop_a
 set j, pop
 set i, pop
 set pc, pop
-
-:fn_check_signals ;Arguments: None, Return: None.
+:fn_check_signals 
 set push, a
 set push, b
 set push, c
@@ -126,12 +83,11 @@ iaq 1
 set i, [current_process]
 set j, 0
 set c, i
-set c, [c+signal_handler_table_start] ;c=signal handler address
+set c, [c+signal_handler_table_start] 
 ife c, 0
-set pc, .done ;nothing to do here, there is no handler
-;add c, signal_handler_table_start
-shl i, 5 ;mul i, 32
-add i, signal_table_start ;[i]=first signal
+set pc, .done 
+shl i, 5 
+add i, signal_table_start 
 :.loop_a
 sti a, [i]
 ife a, 0
@@ -145,7 +101,7 @@ sub i, j
 add j, i
 set c, i
 add c, (sigs_per_proc * 2) - 2
-:.loop_b ;i=signal_table_start+32*[current_process], j=i+2*handled_signals, c=i+2*sigs_per_proc
+:.loop_b 
 sti [i], [j]
 sti [i], [j]
 ife [j], 0
@@ -165,11 +121,10 @@ set c, pop
 set b, pop
 set a, pop
 set pc, pop
-
-:fn_send_signal ;Arguments: A=target process, B=signal to be sent, Return: A=0 on success, errno on failure
+:fn_send_signal 
 set push, c
 iaq 1
-shl a, 5 ;mul a, 32
+shl a, 5 
 add a, signal_table_start - 1
 set c, a
 add c, sigs_per_proc * 2
@@ -179,7 +134,6 @@ ife a, c
 set pc, .no_space
 ifn [a], 0
 set pc, .loop_a
-;found_space
 set [a], b
 set [a+1], [current_process]
 set a, 0
@@ -189,15 +143,13 @@ set a, ERR_signal_queue_full
 iaq 0
 set c, pop
 set pc, pop
-
-;Handles actual interrupts
-:interrupt_address ;A=interrupt
+:interrupt_address 
 set push, b
 set push, c
 set push, x
 iaq 1
 set b, a
-shl b, 1 ;mul b, 2
+shl b, 1 
 add b, interrupt_header_start
 ife [b], -1
 set pc, .no_handler
@@ -205,9 +157,8 @@ ife [b], 0
 set pc, .kernel_handler
 ife [b], [current_process]
 set pc, .current_handler
-;.process_handler, queue interrupt
-set c, [b] ;c=handler proc
-shl c, 5 ;mul c, 32
+set c, [b] 
+shl c, 5 
 add c, signal_table_start
 set x, c
 add x, sigs_per_proc
@@ -226,43 +177,28 @@ set pc, .finish
 set [c], [b+1]
 set [c+1], 0
 set pc, .finish
-:.kernel_handler ;raise interrupt immediately
+:.kernel_handler 
 jsr [b+1]
 set pc, .finish
-:.current_handler ;raise interrupt immediately
+:.current_handler 
 set a, [b]
-shl a, 1 ;mul x, 2
-
-;SHOULD COMPILE FINE, ERROR WITH ORGANIC
-;set a, [a + (interrupt_header_start + 1)]
-;This will work for now
+shl a, 1 
 add a, (interrupt_header_start + 1)
 set a, [a]
-;End hotfix
 set c, [b]
 add c, signal_handler_table_start
 jsr [c]
-;set pc, .finish
-:.no_handler ;return without doing anything
+:.no_handler 
 :.finish
 iaq 0
 set x, pop
 set c, pop
 set b, pop
 rfi 0
-
-;DATA
-:interrupt_header_start ;stores handlers
-;0x0 handler process
-;0x1 handler address if prev is 0, handler message otherwise
-#reserve 32		;max 16 custom interrupts
+:interrupt_header_start 
+#reserve 32		
 :interrupt_header_end
-
 :signal_handler_table_start
-;0x0 handler for process
 #reserve 16
-
-:signal_table_start ;stores signal queues
-;0x0 signal number
-;0x1 signal sender
-#reserve 512	;max_processes * signals_per_process * 2
+:signal_table_start 
+#reserve 512	
