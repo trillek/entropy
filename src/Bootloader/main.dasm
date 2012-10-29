@@ -1,40 +1,21 @@
-; --------------------------------------------
-; Title:   bootloader
-; Author:  ColErr
-; Date:    2012-10-05
-; Version: 0x2
-; --------------------------------------------
-
-;43 words, so a bit longer than the old one.
-;Might be able to trim when the spec is updated
-
-;Also, Notch mentioned that the Device id (A/B) will change, not sure to what yet.
-
-;find M35FD
 SET I, 0xFFFF
- ADD I, 0x1
- HWQ I
- IFE X, 0x1eb3
-  IFE Y, 0x7e91
-   IFE A, 0x7349
-    IFE B, 0xf615
-     IFE C, 0x000b
-      ADD PC, 0x1
+ADD I, 0x1
+HWQ I
+IFE X, 0x1eb3
+IFE Y, 0x7e91
+IFE A, 0x7349
+IFE B, 0xf615
+IFE C, 0x000b
+ADD PC, 0x1
 SUB PC, 0xE
-
-;wait for floppy present
 SET A, 0x0
 HWI I
 IFE B, 0x0
-  SUB PC, 0x3
-
-;load SECTORS sectors from the floppy
+SUB PC, 0x3
 #define SECTORS 0x10
 SET A, 0x2
 SET X, SECTORS
 SET Y, (SECTORS-1)*0x200
-
-;The below loop, pushed backwards onto the stack
 SET PUSH, 0x8761
 SET PUSH, 0x6F81
 SET PUSH, 0x8863
@@ -45,19 +26,4 @@ SET PUSH, 0x0200
 SET PUSH, 0x7c83
 SET PUSH, 0x8381
 SET PUSH, 0x8478
-;End of loop
-
-;When we jump to SP, we start at the beginning of the loop, in the proper order
 SET PC, SP
-
-;This is the HDD read loop
-;:sectorReadLoop
-;  IFE X, 0x0   ;
-;    SET PC, -1 ;
-;  SUB Y, 0x200 ; 
-;  HWI I        ;
-;  IFN B, 0x1   ;
-;    SUB PC, 0x3;
-;  SUB X, 1     ;
-;  SET PC, SP   ;
-;  SET SP, 0    ;

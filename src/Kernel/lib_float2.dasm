@@ -1,208 +1,119 @@
-; --------------------------------------------
-; Title:   IEEE float lib
-; Author:  Canino
-; Date:    6/15/2012
-; Version: 0.1
-; --------------------------------------------
-
-;TODO
-;-fsub
-;-fmul
-;-fdiv
-;-text to float and back
-;-double operations
-
-;All normal float operations are IEEE "half precision" which is 16 bits, or normal precision here
-;All double floats are going to be IEEE "single precision" which is 32 bits
-;Should handle inf values (numbers outside of range) implicitly
-;And the great upside vs the other lib is a float is 1 word long, and should be less operations
-;There are some limitations on representing some ints, but nothing to worry about if we are using it for percents.
-
-;As far as code, I am not preserving variables yet out of sheer laziness. Easy enough to add later.
-
-;@see http://en.wikipedia.org/wiki/Half-precision_floating-point_format
-
-;EXAMPLE CODE
-SET A, 30000 ;First value to add
+SET A, 30000 
 JSR uitof
 SET I, A
-SET A, 30000 ;Second value to add
+SET A, 30000 
 JSR uitof
 SET B, I
 JSR fadd
 JSR ftoui
 SUB PC, 1
-;A should now equal 3
-;END EXAMPLE
-
 #define FS_ZERO      0x0000
 #define FS_NEGZERO   0x8000
 #define FS_INF       0x7C00
 #define FS_NINF      0xFC00
 #define FS_NaN       0x7C01
-
-
-;@name ftoi
-;Converts a float to a unsigned int. The sign bit is ignored
-;@params A
-;@destroys B,C
-;@see ColErr
 :ftoi
-    IFL A, 0x8000
-        SET PC, ftoui
-    SET B, -1
-    SET PC, ftoi_cont
-
-;@name ftoui
-;Converts a float to a unsigned int. The sign bit is ignored
-;@params A, (B)
-;@destroys B,C
-;@returns A
-;@see ColErr
+IFL A, 0x8000
+SET PC, ftoui
+SET B, -1
+SET PC, ftoi_cont
 :ftoui
-    SET B, 1
-    :ftoi_cont
-    SET C, 30
-    AND A, 0x7FFF
-    SHL A, 6
-    SUB C, EX
-    SHR A, 1
-    BOR A, 0x8000
-    SHR A, C
-    ;If we came from ftoi, signs the result, Otherwise we lose 2 cycles
-    MLI A, B
-    SET PC, POP
-    
-
-;@name itof
-;Converts a signed integer to unsigned and marks sign in B, then executes uitof
-;@params A
-;@destroys B,C
-;@see ColErr
-;@see itof
+SET B, 1
+:ftoi_cont
+SET C, 30
+AND A, 0x7FFF
+SHL A, 6
+SUB C, EX
+SHR A, 1
+BOR A, 0x8000
+SHR A, C
+MLI A, B
+SET PC, POP
 :itof
-    IFA A, -1
-        SET PC, uitof
-    SET B, 0x8000
-    MLI A, -1
-    SET PC, itof_cont
-
-;@name uitof
-;Converts an unsigned integer to float, returns in same register
-;@params A, (B)
-;@destroys B,C
-;@returns A
-;@see ColErr
+IFA A, -1
+SET PC, uitof
+SET B, 0x8000
+MLI A, -1
+SET PC, itof_cont
 :uitof
-    SET B, 0
-    :itof_cont
-    SET C, 30
-    IFE A, 0
-        SET PC, POP
-    IFG A, 65504
-        SET PC, .inf
-    SHL A, 1
-    IFE EX, 1
-        SET PC, .cont
-    SUB C, 1
-    SUB PC, 6
-    :.cont
-    SHR A, 6
-    SHL C, 10
-    BOR A, C
-    ;If we are coming from itof, this sets the sign bit, otherwise we lose a cycle
-    BOR A, B
-    
-    SET PC, POP
-    :.inf
-    SET A, FS_INF
-    SET PC, POP
-
-;@name fcmp
-;Compares floats A and B. Returns -1 if A is lesser, 0 if equal, 1 if A is greater
-;@params A,B
-;@destroys B, C
-;@returns A
-;@see ColErr
+SET B, 0
+:itof_cont
+SET C, 30
+IFE A, 0
+SET PC, POP
+IFG A, 65504
+SET PC, .inf
+SHL A, 1
+IFE EX, 1
+SET PC, .cont
+SUB C, 1
+SUB PC, 6
+:.cont
+SHR A, 6
+SHL C, 10
+BOR A, C
+BOR A, B
+SET PC, POP
+:.inf
+SET A, FS_INF
+SET PC, POP
 :fcmp
-    SET C, 0
-    IFE A, B
-            SET PC, .rtn
-    IFU A, -1
-        IFU B, -1
-            SET PC, .neg
-    BOR A, 0x8000
-    BOR B, 0x8000
-    IFL A, B
-        SET C, -1
-    IFG A, B
-        SET C, 1
-    :.rtn
-    SET A, C
-    SET PC, POP
-    :.neg
-    IFL A, B
-        SET C, 1
-    IFG A, B
-        SET C, -1
-    SET PC, .rtn
-
-;@name fadd
-;Adds the floats A and B (no pointers as these are single precision)
-;Doesn't accept negatives at the moment. Old proof of concept code.
-;@params A,B
-;@destroys X,Y
-;@returns A
-;@see ColErr
+SET C, 0
+IFE A, B
+SET PC, .rtn
+IFU A, -1
+IFU B, -1
+SET PC, .neg
+BOR A, 0x8000
+BOR B, 0x8000
+IFL A, B
+SET C, -1
+IFG A, B
+SET C, 1
+:.rtn
+SET A, C
+SET PC, POP
+:.neg
+IFL A, B
+SET C, 1
+IFG A, B
+SET C, -1
+SET PC, .rtn
 :fadd
-	SHL A, 6
-	SET X, EX
-	AND X, 0x1F
-	SUB X, 15
-	
-	SHL B, 6
-	SET Y, EX
-	AND Y, 0x1F
-	SUB Y, 15
-	;X and Y now equal the exponent
-	SHR A, 1
-	BOR A, 0x8000
-	SHR B, 1
-	BOR B, 0x8000
-	;A and B are now the significand with the extra digit
-	IFG X, Y
-		SET PC, .xgy 
-	IFE X, Y
-		SET PC, .cont
-	SUB Y, X
-	ADD X, Y
-	SHR A, Y
-	SET PC, .cont
-	:.xgy
-	SUB X, Y
-	ADD Y, X
-	SHR B, X
-	SET X, Y
-	
-	;A and B are aligned, and X is the exponent
-	:.cont
-	ADD A, B
-	IFE EX, 0
-		SHL A, 1
-    IFN EX, 0
-        ADD X, 1
-	SHR A, 6
-	ADD X, 15
-	SHL X, 10
-	BOR A, X
-	
-	SET PC, POP
-
-;@name fsub
-;Subtracts float B from float A, returns in A
-;@params A,B
-;@destroys 
-;@returns A
-;@see ColErr
+SHL A, 6
+SET X, EX
+AND X, 0x1F
+SUB X, 15
+SHL B, 6
+SET Y, EX
+AND Y, 0x1F
+SUB Y, 15
+SHR A, 1
+BOR A, 0x8000
+SHR B, 1
+BOR B, 0x8000
+IFG X, Y
+SET PC, .xgy 
+IFE X, Y
+SET PC, .cont
+SUB Y, X
+ADD X, Y
+SHR A, Y
+SET PC, .cont
+:.xgy
+SUB X, Y
+ADD Y, X
+SHR B, X
+SET X, Y
+:.cont
+ADD A, B
+IFE EX, 0
+SHL A, 1
+IFN EX, 0
+ADD X, 1
+SHR A, 6
+ADD X, 15
+SHL X, 10
+BOR A, X
+SET PC, POP
 :fsub
-    

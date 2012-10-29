@@ -1,29 +1,17 @@
-; --------------------------------------------
-; Title:   bootloader
-; Author:  Liraal
-; Date:    2012-10-05
-; Version: 0x1
-; --------------------------------------------
-
-;find HMD2043
 set I, 0xFFFF
- add I, 0x1
- hwq I
- ife A, 0x4CAE
-  ife B, 0x74FA
-   ife C, 0x07C2
-   	ife X, 0x4948
-   	 ife Y, 0x2154
-   	  add pc, 0x1
+add I, 0x1
+hwq I
+ife A, 0x4CAE
+ife B, 0x74FA
+ife C, 0x07C2
+ife X, 0x4948
+ife Y, 0x2154
+add pc, 0x1
 sub pc, 0xE
-
-;wait for floppy present
 set A, 0x0
 hwi I
 ife B, 0x0
-	sub pc, 0x3
-
-;load first 0x10 sectors from the floppy
+sub pc, 0x3
 set A, 0x3
 set B, 0x0
 hwi I

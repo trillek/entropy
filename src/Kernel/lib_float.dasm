@@ -1,624 +1,390 @@
-;----------------------------------------------------------------
-;CONSTANTS
-;----------------------------------------------------------------
 #define MASK_ZERO 1
 #define MASK_NORMAL 2
 #define MASK_INF 4
 #define MASK_NAN 8
-
 #define SIGN 0
 #define EXP 1
 #define HIGH 2
 #define LOW 3
 #define MASK 4
-
 #segment data
-;----------------------------------------------------------------
-; VALUES
-; todo: replace nan and inf with standard values
-;----------------------------------------------------------------
 :CONST_1F dat 0x0000, 0x007f, 0x8000, 0x0000, MASK_NORMAL
 :CONST_10F dat 0x0000, 0x0082, 0xa000, 0x0000, MASK_NORMAL
 :CONST_NAN dat 0xffff, 0xffff, 0xffff, 0xffff, MASK_NAN
 :CONST_INF dat 0x0000, 0xffff, 0x0000, 0x0000, MASK_INF
 :CONST_ZERO dat 0x0000, 0x0000, 0x0000, 0x0000, MASK_ZERO
-
 :s_nan dat "NaN", 0
 :s_ninf dat "-"
 :s_inf dat "Inf", 0
 :s_nzero dat "-"
 :s_zero dat "0.0", 0
-
 #segment code
-;----------------------------------------------------------------
-; extern int16 atof(uint16 *str, float *f)
-;
-; Parses the string str interpreting its content as a floating
-; point number in f.
-;
-; Return number of characters consumed or 0 if error
-;
-; local variable space
-; [-5] struct float_register
-;----------------------------------------------------------------
 :atof
-set push, 2 ; sizeof(args)
-set push, 5 ; sizeof(vars)
+set push, 2
+set push, 5
 jsr nc_preamble
-
 :atof_begin
-set push, [z+12] ; str
-set push, z ; float_register
-sub peek, 5
-jsr reg_atof
-
+set push, [z+12]
 set push, z
 sub peek, 5
-set push, [z+11] ; f
+jsr reg_atof
+set push, z
+sub peek, 5
+set push, [z+11]
 jsr reg_to_float
-
 jsr nc_postamble
-
-;----------------------------------------------------------------
-; extern void *ftoa(float *f, uint16 *buffer)
-;
-; local variable space
-; [-5] struct float_register
-;----------------------------------------------------------------
 :ftoa
 set push, 2
 set push, 5
 jsr nc_preamble
-
 :ftoa_begin
-set push, [z+12] ; f
-set push, z ; float_register
+set push, [z+12]
+set push, z
 sub peek, 5
 jsr float_to_reg
-
-set push, z ; float_register
+set push, z
 sub peek, 5
-set push, [z+11] ; buffer
+set push, [z+11]
 jsr reg_ftoa
-
 jsr nc_postamble
-
-;----------------------------------------------------------------
-; extern void itof(int *i, float *f)
-;
-; local variable space
-; [-5] struct float_register
-;----------------------------------------------------------------
 :itof
 set push, 2
 set push, 5
 jsr nc_preamble
-
 :itof_begin
-set push, [z+12] ; i
+set push, [z+12]
 set push, z
 sub peek, 5
 jsr int_to_reg
-
 set push, z
 sub peek, 5
-set push, [z+11] ; f
+set push, [z+11]
 jsr reg_to_float
-
 jsr nc_postamble
-
-;----------------------------------------------------------------
-; extern int16 ftoi(float *f, int *i)
-;
-; return 0 for success and 1 for failure
-;
-; local variable space
-; [-5] struct float_register
-;----------------------------------------------------------------
 :ftoi
 set push, 2
 set push, 5
 jsr nc_preamble
-
 :ftoi_begin
-set push, [z+12] ; f
+set push, [z+12]
 set push, z
 sub peek, 5
 jsr float_to_reg
-
 set push, z
 sub peek, 5
-set push, [z+11] ; i
+set push, [z+11]
 jsr reg_to_int
-
 jsr nc_postamble
-
-;----------------------------------------------------------------
-; extern int16 fcmp(float *f1, float *f2)
-;
-; return -1 if f1<f2, 0 if f1==f2, 1 if f1>f2
-;
-; local variable space
-; [ -5] struct float_register f2
-; [-10] struct float_register f1
-;----------------------------------------------------------------
 :fcmp
 set push, 2
 set push, 10
 jsr nc_preamble
-
 :fcmp_begin
-set push, [z+12] ; f1
+set push, [z+12]
 set push, z
 sub peek, 10
 jsr float_to_reg
-
-set push, [z+11] ; f2
+set push, [z+11]
 set push, z
 sub peek, 5
 jsr float_to_reg
-
 set push, z
 sub peek, 10
 set push, z
 sub peek, 5
-jsr reg_cmp ; calculate
-
+jsr reg_cmp
 jsr nc_postamble
-
-;----------------------------------------------------------------
-; extern void fsub(float *difference, float *minuend, float *subtrahend)
-;
-; local variable space
-; [ -5] struct float_register subtrahend
-; [-10] struct float_register minuend or difference
-;----------------------------------------------------------------
 :fsub
 set push, 3
 set push, 10
 jsr nc_preamble
-
 :fsub_begin
 set a, reg_sub
 set pc, nc_init_arithmetic
-
-;----------------------------------------------------------------
-; extern void fadd(float *sum, float *term1, float *term2)
-; local variable space
-; [ -5] struct float_register term2
-; [-10] struct float_register term1 or sum
-;----------------------------------------------------------------
 :fadd
 set push, 3
 set push, 10
 jsr nc_preamble
-
 :fadd_begin
 set a, reg_add
 set pc, nc_init_arithmetic
-
-;----------------------------------------------------------------
-; extern void fmul(float *product, float *factor1, float *factor2)
-; local variable space
-; [ -5] struct float_register factor2
-; [-10] struct float_register factor1 or product
-;----------------------------------------------------------------
 :fmul
 set push, 3
 set push, 10
 jsr nc_preamble
-
 :fmul_begin
 set a, reg_mul
 set pc, nc_init_arithmetic
-
-;----------------------------------------------------------------
-; extern void fdiv(float *quotient, float *divident, float *divisor)
-; local variable space
-; [ -5] struct float_register divisor
-; [-10] struct float_register divident or quotient
-;----------------------------------------------------------------
 :fdiv
 set push, 3
 set push, 10
 jsr nc_preamble
-
 :fdiv_begin
 set a, reg_div
 set pc, nc_init_arithmetic
-
-;----------------------------------------------------------------
-;Common initialization code for fadd, fsub, fmul and fdiv
-;----------------------------------------------------------------
 :nc_init_arithmetic
-set push, [z+12] ; 1st operand
+set push, [z+12]
 set push, z
 sub peek, 10
 jsr float_to_reg
-
-set push, [z+11] ; 2nd operand
+set push, [z+11]
 set push, z
 sub peek, 5
 jsr float_to_reg
-
 set push, z
 sub peek, 10
 set push, z
 sub peek, 5
-jsr a ; calculate
-
+jsr a
 set push, z
 sub peek, 10
-set push, [z+13] ; result
+set push, [z+13]
 jsr reg_to_float
-
 jsr nc_postamble
-
-;----------------------------------------------------------------
-; Common code to return from fadd, fsub, fmul and fdiv
-; with given value
-;----------------------------------------------------------------
 :nc_nan2ireg_postamble2
 jsr nc_nan2ireg
 jsr nc_postamble
-
 :nc_pinf2ireg_postamble2
 jsr nc_pinf2ireg
 jsr nc_postamble
 :nc_inf2ireg_postamble2
 jsr nc_inf2ireg
 jsr nc_postamble
-
 :nc_pzero2ireg_postamble2
 jsr nc_pzero2ireg
 jsr nc_postamble
 :nc_zero2ireg_postamble2
 jsr nc_zero2ireg
 jsr nc_postamble
-
-;----------------------------------------------------------------
-; void float_to_reg(float *f, struct float_register *reg)
-; local variable space
-; void
-;----------------------------------------------------------------
 :float_to_reg
 set push, 2
 set push, 0
 jsr nc_preamble
-
 :float_to_reg_begin
-set i, [z+11] ; reg
-set j, [z+12] ; f
-
+set i, [z+11]
+set j, [z+12]
 set a, [j]
 set b, a
-and b, 0x8000 ; sign bit
-set [SIGN+i], b ; store sign
-
+and b, 0x8000
+set [SIGN+i], b
 set b, a
-
-shr a, 7 ; shift exp to 0
-and a, 0x00ff ; remove sign
-set [EXP+i], a ; store exponent
-
-and b, 0x007f ; remove sign and exp
-shl b, 8 ; shift mantissa to bit 14
-
+shr a, 7
+and a, 0x00ff
+set [EXP+i], a
+and b, 0x007f
+shl b, 8
 set c, [j+1]
-shl c, 8 ; shift 8 bits from low to high
-bor b, ex ; high and low are ready
-
-set [LOW+i], c ; store low
+shl c, 8
+bor b, ex
+set [LOW+i], c
 bor c, b
-
-set j, MASK_NORMAL ; init mask as normal number
+set j, MASK_NORMAL
 ifn a, 255
 set pc, float_to_reg_1
 ife c, 0
-set j, MASK_INF ; set inf
+set j, MASK_INF
 ifn c, 0
-set j, MASK_NAN ; set nan
-
+set j, MASK_NAN
 :float_to_reg_1
-bor c, a ; check for zero
-ife c, 0 ; if value is zero
-set j, MASK_ZERO ; set zero
-
-set [MASK+i], j ; store mask
-
+bor c, a
+ife c, 0
+set j, MASK_ZERO
+set [MASK+i], j
 ife j, MASK_NORMAL
-bor b, 0x8000 ; set hidden bit 15
-
-set [HIGH+i], b ; store high
-
+bor b, 0x8000
+set [HIGH+i], b
 jsr nc_postamble
-
-;----------------------------------------------------------------
-; void reg_to_float(struct float_register *reg, float *f)
-; local variable space
-; void
-;----------------------------------------------------------------
 :reg_to_float
 set push, 2
 set push, 0
 jsr nc_preamble
-
 :reg_to_float_begin
-set i, [z+12] ; reg
-set j, [z+11] ; f
-
+set i, [z+12]
+set j, [z+11]
 set a, [EXP+i]
 shl a, 7
 bor a, [SIGN+i]
-
 set b, [HIGH+i]
-shl b, 1 ; get rid of the hidden bit
-shl b, 7 ; shift 7 bits to ex
+shl b, 1
+shl b, 7
 bor a, ex
 set [j], a
-
 set c, [LOW+i]
 shl c, 8
 bor b, ex
-set [1+j], b ; rounding with truncate
-; todo round to nearest even (as in c)
-; if guard and (lsb or sticky) round up
+set [1+j], b
 jsr nc_postamble
-
-;----------------------------------------------------------------
-; void int_to_reg(int *i, struct float_register *reg)
-; local variable space
-; void
-;----------------------------------------------------------------
 :int_to_reg
 set push, 2
 set push, 0
 jsr nc_preamble
-
 :int_to_reg_begin
-set i, [z+11] ; reg
-set j, [z+12] ; i
-
-set x, [ j] ; read int to registers
+set i, [z+11]
+set j, [z+12]
+set x, [ j]
 set y, [1+j]
-
-set j, x ; prepare int is zero check
+set j, x
 bor j, y
-
-ifg j, 0 ; if int is not zero
+ifg j, 0
 set pc, int_to_reg_sign
-
 set pc, nc_pzero2ireg_postamble2
-
-:int_to_reg_sign ; int is > zero
+:int_to_reg_sign
 set [SIGN+i], 0x0000
 ifg 0x8000, x
-set pc, int_to_reg_exp ; if sign bit is zero (positive)
-
-set [SIGN+i], 0x8000 ; sign is negative
-xor x, 0xffff ; negate number
+set pc, int_to_reg_exp
+set [SIGN+i], 0x8000
+xor x, 0xffff
 xor y, 0xffff
 add y, 1
 add x, ex
-
-:int_to_reg_exp ; init exp
+:int_to_reg_exp
 set a, 158
-
-:int_to_reg_normalize ; normalize mantissa
-ifb x, 0x8000 ; is mantissa normalized?
-set pc, int_to_reg_store ; yes
-
-shl x, 1 ; not normalized, shift left
+:int_to_reg_normalize
+ifb x, 0x8000
+set pc, int_to_reg_store
+shl x, 1
 shl y, 1
 bor x, ex
-
-sub a, 1 ; sub one from exp
-set pc, int_to_reg_normalize ; another round
-
-:int_to_reg_store ; setup register
+sub a, 1
+set pc, int_to_reg_normalize
+:int_to_reg_store
 set [EXP+i], a
 set [HIGH+i], x
 set [LOW+i], y
 set [MASK+i], MASK_NORMAL
-
 jsr nc_postamble
-
-;----------------------------------------------------------------
-; void uint16_to_reg(uint16 i, struct float_register *reg)
-; local variable space
-; void
-;----------------------------------------------------------------
 :uint16_to_reg
 set push, 2
 set push, 0
 jsr nc_preamble
-
 :uint16_to_reg_begin
-set i, [z+11] ; reg
-set x, [z+12] ; i
-
-ifg x, 0 ; if int is not zero
+set i, [z+11]
+set x, [z+12]
+ifg x, 0
 set pc, uint16_to_reg_exp
-
 set pc, nc_pzero2ireg_postamble2
-
-:uint16_to_reg_exp ; init exp
+:uint16_to_reg_exp
 set a, 142
-
-:uint16_to_reg_normalize ; normalize mantissa
-ifb x, 0x8000 ; is mantissa normalized?
-set pc, uint16_to_reg_store ; yes
-
-shl x, 1 ; not normalized, shift left
-
-sub a, 1 ; sub one from exp
-set pc, uint16_to_reg_normalize ; another round
-
-:uint16_to_reg_store ; setup register
+:uint16_to_reg_normalize
+ifb x, 0x8000
+set pc, uint16_to_reg_store
+shl x, 1
+sub a, 1
+set pc, uint16_to_reg_normalize
+:uint16_to_reg_store
 set [SIGN+i], 0x0000
 set [EXP+i], a
 set [HIGH+i], x
 set [LOW+i], 0
 set [MASK+i], MASK_NORMAL
-
 jsr nc_postamble
-
-;----------------------------------------------------------------
-; uint16 reg_to_int(struct float_register *reg, int *i)
-; local variable space
-; void
-;----------------------------------------------------------------
 :reg_to_int
 set push, 2
 set push, 0
 jsr nc_preamble
-
 :reg_to_int_begin
-set i, [z+12] ; reg
-set j, [z+11] ; i
-
+set i, [z+12]
+set j, [z+11]
 set a, [MASK+i]
 ife a, MASK_NAN
 set pc, reg_to_int_error
 ife a, MASK_INF
-set pc, reg_to_int_error ; overflow
+set pc, reg_to_int_error
 ife a, MASK_ZERO
 set pc, reg_to_int_zero
-
-set b, [EXP+i] ; calculate amount of shifting needed
+set b, [EXP+i]
 ifg 127, b
-set pc, reg_to_int_zero ; zero
+set pc, reg_to_int_zero
 ifg b, 157
-set pc, reg_to_int_error ; overflow
-set a, 158 ; init exp
+set pc, reg_to_int_error
+set a, 158
 sub a, b
-
 set b, [HIGH+i]
 set c, [LOW+i]
-
-shr c, a ; shift right 1-31
+shr c, a
 shr b, a
 bor c, ex
-
 ife 0, [SIGN+i]
 set pc, reg_to_int_store_result
-
-xor c, 0xffff ; negate integer
+xor c, 0xffff
 xor b, 0xffff
 add c, 1
 add b, ex
-
 :reg_to_int_store_result
 set [j], b
 set [1+j], c
 set x, 0
 jsr nc_postamble
-
-:reg_to_int_zero ; return zero
+:reg_to_int_zero
 set [j], 0
 set [1+j], 0
 set x, 0
 jsr nc_postamble
-
-:reg_to_int_error ; return error
+:reg_to_int_error
 set x, -1
 jsr nc_postamble
-
-;----------------------------------------------------------------
-; uint16 reg_to_uint16(struct float_register *reg)
-; local variable space
-; void
-;----------------------------------------------------------------
 :reg_to_uint16
 set push, 1
 set push, 0
 jsr nc_preamble
-
 :reg_to_uint16_begin
-set i, [z+11] ; reg
-
+set i, [z+11]
 ifn [SIGN+i], 0
 set pc, reg_to_uint16_zero
-
 set a, [MASK+i]
 ifn a, MASK_NORMAL
 set pc, reg_to_uint16_zero
-
-
-set b, [EXP+i] ; calculate amount of shifting needed
+set b, [EXP+i]
 ifg 127, b
-set pc, reg_to_uint16_zero ; zero
+set pc, reg_to_uint16_zero
 ifg b, 142
-set pc, reg_to_uint16_zero ; overflow
-set a, 142 ; init exp
+set pc, reg_to_uint16_zero
+set a, 142
 sub a, b
-
 set x, [HIGH+i]
-
-shr x, a ; shift right 1-15
-
+shr x, a
 :reg_to_uint16_finish
 jsr nc_postamble
-
-:reg_to_uint16_zero ; return zero
+:reg_to_uint16_zero
 set x, 0
 jsr nc_postamble
-
-;----------------------------------------------------------------
-; uint16 fcmp(struct float_register *reg1, struct float_register *reg2)
-; local variable space
-; struct float_register *temp
-;----------------------------------------------------------------
 :reg_cmp
 set push, 2
 set push, 5
 jsr nc_preamble
-
 :reg_cmp_begin
-set j, [z+12] ; reg1
+set j, [z+12]
 set i, z
 sub i, 5
 jsr nc_jreg2ireg
-
 set i, z
 sub i, 5
-set push, i ; 1st operand register
-set push, [z+11] ; reg2
-jsr reg_sub ; calculate
-
+set push, i
+set push, [z+11]
+jsr reg_sub
 set x, 0
 ife [MASK+i], MASK_ZERO
 jsr nc_postamble
-
 set x, 1
 ife [SIGN+i], 0
 jsr nc_postamble
-
 set x, -1
 jsr nc_postamble
-
-;----------------------------------------------------------------
-; Subroutines to copy one of the given values (NaN, Inf, 0.0,
-; float register pointed by j) to float register pointed by i.
-;----------------------------------------------------------------
 :nc_pzero2ireg
 set j, CONST_ZERO
 set pc, nc_jreg2ireg
 :nc_zero2ireg
 set j, CONST_ZERO
 set pc, nc_jreg2ireg_no_sign
-
 :nc_pinf2ireg
 set j, CONST_INF
 set pc, nc_jreg2ireg
 :nc_inf2ireg
 set j, CONST_INF
 set pc, nc_jreg2ireg_no_sign
-
 :nc_nan2ireg
 set j, CONST_NAN
 set pc, nc_jreg2ireg
-
 :nc_jreg2ireg
 set [SIGN+i], [SIGN+j]
 :nc_jreg2ireg_no_sign
@@ -627,71 +393,48 @@ set [HIGH+i], [HIGH+j]
 set [LOW+i], [LOW+j]
 set [MASK+i], [MASK+j]
 set pc, pop
-
-;----------------------------------------------------------------
-; void reg_sub(struct float_reg *f1, struct float_reg *f2)
-; local variable space
-; struct float_register *temp
-;----------------------------------------------------------------
 :reg_sub
 set push, 2
 set push, 5
 jsr nc_preamble
-
 :reg_sub_begin
-set j, [z+11] ; f2
+set j, [z+11]
 set i, z
 sub i, 5
 jsr nc_jreg2ireg
-
-set i, [z+12] ; f1
+set i, [z+12]
 set j, z
 sub j, 5
-
-xor [SIGN+j], 0x8000 ; negate subtrahend and join addition
+xor [SIGN+j], 0x8000
 set pc, reg_add_1
-
-;----------------------------------------------------------------
-; void reg_add(struct float_reg *t1, struct float_reg *t2)
-; local variable space
-; struct float_register *temp
-;----------------------------------------------------------------
 :reg_add
 set push, 2
 set push, 5
 jsr nc_preamble
-
 :reg_add_begin
-set j, [z+11] ; t2
+set j, [z+11]
 set i, z
 sub i, 5
 jsr nc_jreg2ireg
-
-set i, [z+12] ; t1
+set i, [z+12]
 set j, z
 sub j, 5
-
 :reg_add_1
 set a, [MASK+i]
 set b, [MASK+j]
 set c, a
 xor c, b
-ifb c, MASK_NAN ; if a register is nan
+ifb c, MASK_NAN
 set pc, nc_nan2ireg_postamble2
-
-ifb c, MASK_INF ; if a register is inf
+ifb c, MASK_INF
 set pc, reg_add_inf
-
 ifb c, MASK_ZERO
 set pc, reg_add_zero
-
 :reg_add_load_registers
-set a, [HIGH+i] ; read values from float
-set b, [LOW+i] ; registers to cpu registers
-
+set a, [HIGH+i]
+set b, [LOW+i]
 set x, [HIGH+j]
 set y, [LOW+j]
-
 ifg [EXP+i], [EXP+j]
 set pc, reg_add_align_exp
 ifg [EXP+j], [EXP+i]
@@ -704,174 +447,122 @@ ifg b, y
 set pc, reg_add_select_operator
 ifg y, b
 set pc, reg_add_swap
-
-ifg [SIGN+i], [SIGN+j] ; frega and fregx are equal
-set pc, reg_add_swap_sign ; priorize positive zero
-
+ifg [SIGN+i], [SIGN+j]
+set pc, reg_add_swap_sign
 set pc, reg_add_select_operator
-
-:reg_add_swap ; swap register values
+:reg_add_swap
 set c, a
 set a, x
 set x, c
-
 set c, b
 set b, y
 set y, c
-
 set c, [EXP+i]
 set [EXP+i], [EXP+j]
 set [EXP+j], c
-
-:reg_add_swap_sign ; swap signs
+:reg_add_swap_sign
 set c, [SIGN+i]
 set [SIGN+i], [SIGN+j]
 set [SIGN+j], c
-
 :reg_add_align_exp
 set c, [EXP+j]
 sub c, [EXP+i]
 xor c, 0xffff
 add c, 1
-
-ifg c, 31 ; if exp distance>31, fregx is effectively zero
-set pc, reg_add_finish_ab ; all done
-
-shr y, c ; shift low bits
-shr x, c ; shift high bits
-bor y, ex ; overflow high bits to low byte
-
+ifg c, 31
+set pc, reg_add_finish_ab
+shr y, c
+shr x, c
+bor y, ex
 :reg_add_select_operator
-ife [SIGN+i], [SIGN+j] ; do frega and fregx have same sign?
-set pc, reg_add_addition ; yes, add the mantissas
-
-sub b, y ; no, subtract the mantissas
-add a, ex ; todo if o=ffff this must overflow also!
-sub a, x ; big-small cannot overflow
-
-set c, 0 ; shift counter
-
+ife [SIGN+i], [SIGN+j]
+set pc, reg_add_addition
+sub b, y
+add a, ex
+sub a, x
+set c, 0
 :reg_add_subtract_shift_left
-ifb a, 0x8000 ; if 1 is found in bit 15
+ifb a, 0x8000
 set pc, reg_add_subtract_exp
 ifn c, 32
 set pc, reg_add_subtract_shift_left_1
-
 set pc, nc_zero2ireg_postamble2
-
 :reg_add_subtract_shift_left_1
 shl a, 1
 shl b, 1
 bor a, ex
 add c, 1
 set pc, reg_add_subtract_shift_left
-
 :reg_add_subtract_exp
-sub [EXP+i], c ; subtract normalization amount from exp
-ife ex, 0xffff ; underflow, return +/-zero
+sub [EXP+i], c
+ife ex, 0xffff
 set pc, nc_zero2ireg_postamble2
-
 set pc, reg_add_finish_ab
-
-:reg_add_addition ; add fractions
+:reg_add_addition
 add b, y
 add a, ex
 set c, ex
-
 add a, x
 bor c, ex
-ife c, 0 ; if no mantissa overflow
-set pc, reg_add_finish_ab ; all done
-
-add [EXP+i], 1 ; mantissa carried, shift right
-ife [EXP+i], 0x00ff ; overflow if exponent too big
+ife c, 0
+set pc, reg_add_finish_ab
+add [EXP+i], 1
+ife [EXP+i], 0x00ff
 set pc, nc_inf2ireg_postamble2
-
-shr b, 1 ; shift low
-shr a, 1 ; shift high
-bor b, ex ; carry from high to low
-bor a, 0x8000 ; set back the overflowed bit from addition
-
+shr b, 1
+shr a, 1
+bor b, ex
+bor a, 0x8000
 :reg_add_finish_ab
 set [HIGH+i], a
 set [LOW+i], b
 jsr nc_postamble
 
-
-:reg_add_inf ; a register is inf
-ifn c, MASK_INF ; only one inf?
+:reg_add_inf
+ifn c, MASK_INF
 set pc, reg_add_inf_single
-
-ife [SIGN+i], [SIGN+j] ; both are inf, compare signs
-set pc, nc_inf2ireg_postamble2 ; same sign
-
-set pc, nc_nan2ireg_postamble2 ; two infs of different signs
-
+ife [SIGN+i], [SIGN+j]
+set pc, nc_inf2ireg_postamble2
+set pc, nc_nan2ireg_postamble2
 :reg_add_inf_single
-ife b, MASK_INF ; which one is the inf?
-set [SIGN+i], [SIGN+j] ; b is inf, copy its sign to result
-set pc, nc_inf2ireg_postamble2 ; exit reg_add
-
+ife b, MASK_INF
+set [SIGN+i], [SIGN+j]
+set pc, nc_inf2ireg_postamble2
 :reg_add_zero
-ifn c, MASK_ZERO ; only one zero?
+ifn c, MASK_ZERO
 set pc, reg_add_zero_single
-and [SIGN+i], [SIGN+j] ; only -0 + -0 is -0
+and [SIGN+i], [SIGN+j]
 set pc, nc_zero2ireg_postamble2
-
 :reg_add_zero_single
 ife a, MASK_ZERO
-jsr nc_jreg2ireg ; 1st term is zero, 2nd term is the result
+jsr nc_jreg2ireg
 jsr nc_postamble
-
-;----------------------------------------------------------------
-; void reg_mul(struct float_reg *f1, struct float_reg *f2)
-; local variable space
-; void
-;----------------------------------------------------------------
 :reg_mul
 set push, 2
 set push, 0
 jsr nc_preamble
-
 :reg_mul_begin
-set i, [z+12] ; f1
-set j, [z+11] ; f2
-
-; set the sign
+set i, [z+12]
+set j, [z+11]
 xor [SIGN+i], [SIGN+j]
-
-; handle special cases
 set a, [MASK+i]
 bor a, [MASK+j]
-ifb a, MASK_NAN ; if a or x is nan
+ifb a, MASK_NAN
 set pc, nc_nan2ireg_postamble2
-ife a, 5 ; MASK_ZERO | MASK_INF
+ife a, 5
 set pc, nc_nan2ireg_postamble2
-ifb a, MASK_ZERO ; one zero
+ifb a, MASK_ZERO
 set pc, nc_zero2ireg_postamble2
-ifb a, MASK_INF ; one inf
+ifb a, MASK_INF
 set pc, nc_inf2ireg_postamble2
-
-; this is how we utilize registers
-; m m (= i)
-; * m m (= j)
-; -------------------
-; a b c x (= result)
-
-; start counting
-; jl*il -> c,x
 set x, [LOW+j]
 mul x, [LOW+i]
 set c, ex
-
-; jl*ih -> b,+c
 set y, [LOW+j]
 mul y, [HIGH+i]
 set b, ex
 add c, y
-add b, ex ; cannot of
-
-; jh*il -> +b,+c
+add b, ex
 set y, [HIGH+j]
 mul y, [LOW+i]
 add b, ex
@@ -879,30 +570,23 @@ set a, ex
 add c, y
 add b, ex
 add a, ex
-
-; jh*ih -> +a,+b
 set y, [HIGH+j]
 mul y, [HIGH+i]
-add a, ex ; cannot of
+add a, ex
 add b, y
-add a, ex ; cannot of
-
-; calculate exponent
+add a, ex
 set y, [EXP+i]
 add y, [EXP+j]
-add y, 1 ; amount of possible shifting
-
-; shift if msb not set
+add y, 1
 ifb a, 0x8000
 set pc, reg_mul_exp
-sub y, 1 ; take back the shifting
+sub y, 1
 shl a, 1
 shl b, 1
 bor a, ex
 shl c, 1
 bor b, ex
-
-:reg_mul_exp ; calculate exponent
+:reg_mul_exp
 ifg 128, y
 set pc, nc_zero2ireg_postamble2
 sub y, 127
@@ -912,74 +596,54 @@ set [EXP+i], y
 set [HIGH+i], a
 set [LOW+i], b
 jsr nc_postamble
-
-;----------------------------------------------------------------
-; void reg_div(struct float_reg *divident, struct float_reg *divisor)
-; local variable space
-; void
-;----------------------------------------------------------------
 :reg_div
 set push, 2
 set push, 0
 jsr nc_preamble
-
 :reg_div_begin
-set i, [z+12] ; divident
-set j, [z+11] ; divisor
-
-; set the sign
+set i, [z+12]
+set j, [z+11]
 xor [SIGN+i], [SIGN+j]
-
-; handle special cases
 set a, [MASK+i]
 set b, [MASK+j]
 set c, a
 bor c, b
-
-ifb c, MASK_NAN ; a register is nan
+ifb c, MASK_NAN
 set pc, nc_nan2ireg_postamble2
-ife c, MASK_INF ; both inf
+ife c, MASK_INF
 set pc, nc_nan2ireg_postamble2
-ife c, MASK_ZERO ; both zero
+ife c, MASK_ZERO
 set pc, nc_nan2ireg_postamble2
-ife a, MASK_INF ; divident is inf
+ife a, MASK_INF
 set pc, nc_inf2ireg_postamble2
-ife b, MASK_INF ; divisor is inf
+ife b, MASK_INF
 set pc, nc_zero2ireg_postamble2
-ife a, MASK_ZERO ; divident is zero
+ife a, MASK_ZERO
 set pc, nc_zero2ireg_postamble2
-ife b, MASK_ZERO ; divisor is zero
+ife b, MASK_ZERO
 set pc, nc_inf2ireg_postamble2
-
-;register allocation
-;divident [i+high], [i+low]
-;divisor [j+high], [j+low]
-;quotient a, b
-;word counter x
-;temp y
-
-set x, 0 ; current word number
-set b, 1 ; set sentinel
+set x, 0
+set b, 1
 :reg_div_check_subtract
-set y, 1 ; see if divisor can be subtracted from divident
-ifg [LOW+j], [LOW+i] ; y=1 can, y=0 cannot
+set y, 1
+ifg [LOW+j], [LOW+i]
 set y, 0
 ifg [HIGH+j], [HIGH+i]
 set y, 0
 ifg [HIGH+i], [HIGH+j]
 set y, 1
 :reg_div_next_bit
-shl b, 1 ; roll the bit into quotient
+shl b, 1
 bor b, y
-ife 0, ex ; no sentinel out
+ife 0, ex
 set pc, reg_div_no_word
-ife x, 1 ; 32 bits completed?
-set pc, reg_div_exp ; exit
-add x, 1 ; increment word counter
-set a, b ; store high word
-set b, 1 ; restrart sentinel
+ife x, 1
+set pc, reg_div_exp
+add x, 1
+set a, b
+set b, 1
 :reg_div_no_word
-ife y, 1 ; do subtract if possible
+ife y, 1
 set pc, reg_div_subtract
 :reg_div_shift
 shl [HIGH+i], 1
@@ -996,76 +660,49 @@ sub [LOW+i], [LOW+j]
 add [HIGH+i], ex
 sub [HIGH+i], [HIGH+j]
 set pc, reg_div_shift
-
 :reg_div_exp
-; calculate exponent
-set c, 127 ; set bias to prevent negative result
-add c, [EXP+i] ;
-sub c, [EXP+j] ;
+set c, 127
+add c, [EXP+i]
+sub c, [EXP+j]
 ife ex, 0xffff
-set pc, nc_zero2ireg_postamble2 ; underflow
+set pc, nc_zero2ireg_postamble2
 ife c, 0
-set pc, nc_zero2ireg_postamble2 ; zero
+set pc, nc_zero2ireg_postamble2
 ifg c, 254
-set pc, nc_inf2ireg_postamble2 ; overflow
-
+set pc, nc_inf2ireg_postamble2
 :reg_div_normalize
 ifb a, 0x8000
-set pc, reg_div_finish ; dont shift
-shl a, 1 ; normalize
+set pc, reg_div_finish
+shl a, 1
 shl b, 1
 bor a, ex
 sub c, 1
 set pc, reg_div_normalize
-
 :reg_div_finish
 set [EXP+i], c
-set [HIGH+i], a ; store quotient to register
+set [HIGH+i], a
 set [LOW+i], b
-
 jsr nc_postamble
-
-;----------------------------------------------------------------
-; void pow10_reg(uint16 x, struct float_reg *reg)
-; local variable space
-;----------------------------------------------------------------
 :reg_pow10
 set push, 2
 set push, 0
 jsr nc_preamble
-
 :reg_pow10_begin
 set j, CONST_1F
-set i, [z+11] ; reg
+set i, [z+11]
 jsr nc_jreg2ireg
-
-set a, [z+12] ; x
-
+set a, [z+12]
 set b, 1
 ifg 0x8000, a
 set b, -1
-
 :reg_pow10_calc
 ife a, 0
 jsr nc_postamble
-
 add a, b
-
 set push, i
 set push, CONST_10F
 jsr reg_mul
 set pc, reg_pow10_calc
-
-;----------------------------------------------------------------
-; extern void atof_reg(uint16 *a, struct float_reg *reg)
-; local variable space
-; [-1] uint16 significants;
-; [-2] uint16 exp10_modifier;
-; [-3] uint16 exp10;
-; [-4] uint16 mantissa_sign;
-; [-5] uint16 exp_sign
-; [-10] struct float_register temp
-;----------------------------------------------------------------
 #define atof_start 1
 #define atof_sign 2
 #define atof_whole 4
@@ -1074,35 +711,27 @@ set pc, reg_pow10_calc
 #define atof_exp 32
 #define atof_esign 64
 #define atof_enum 128
-
 :reg_atof
 set push, 2
 set push, 11
 jsr nc_preamble
-
 :reg_atof_begin
-set [z-1], 0 ; significants
-set [z-2], 0 ; exp10_modifier
-set [z-3], 0 ; exp10
-set [z-4], 0 ; mantissa_sign
-set [z-5], 0 ; exp_sign
-
-set c, [z+12] ; a
-set [z-11], c ; char ptr
-
-set i, [z+11] ; reg
-jsr nc_pzero2ireg ; zero target register
-
+set [z-1], 0
+set [z-2], 0
+set [z-3], 0
+set [z-4], 0
+set [z-5], 0
+set c, [z+12]
+set [z-11], c
+set i, [z+11]
+jsr nc_pzero2ireg
 set j, z
 sub j, 10
-
-set a, 1 ; start state
-
+set a, 1
 :reg_atof_loop
-set c, [z-11] ; read next char
+set c, [z-11]
 add [z-11], 1
 set c, [c]
-
 ife c, '+'
 set pc, reg_atof_plus
 ife c, '-'
@@ -1113,78 +742,58 @@ ife c, 'E'
 set pc, reg_atof_exponent
 ife c, '.'
 set pc, reg_atof_decimal_point
-
-ifg c, '9' ; not a number?
+ifg c, '9'
 set pc, reg_atof_end
-ifg '0', c ; not a number?
+ifg '0', c
 set pc, reg_atof_end
-
-sub c, '0' ; convert char to int
-
+sub c, '0'
 ifb a, 224
 set pc, reg_atof_exponent_number
-ifb a, 24 ; if in fraction part
+ifb a, 24
 set pc, reg_atof_decimal_number
-ifb a, 7 ; if in whole number part
+ifb a, 7
 set pc, reg_atof_whole_number
-
-set pc, reg_atof_end ; wrong state for a number
-
+set pc, reg_atof_end
 :reg_atof_decimal_number
-set a, 16 ; set state
-
-ife [z-1], 10 ; ignore non-significant decimals
+set a, 16
+ife [z-1], 10
 set pc, reg_atof_loop
-
 sub [z-2], 1
 set pc, reg_atof_add_significant
-
 :reg_atof_whole_number
-set a, 4 ; set state
-
-set x, c
-bor x, [z-1]
-ife x, 0 ; ignore leading zeros
-set pc, reg_atof_loop
-
-ife [z-1], 10
-set pc, reg_atof_significant_full
-
-:reg_atof_add_significant
-set push, i
-set push, CONST_10F
-jsr reg_mul
-
+set a, 4
 set x, c
 bor x, [z-1]
 ife x, 0
 set pc, reg_atof_loop
-
+ife [z-1], 10
+set pc, reg_atof_significant_full
+:reg_atof_add_significant
+set push, i
+set push, CONST_10F
+jsr reg_mul
+set x, c
+bor x, [z-1]
+ife x, 0
+set pc, reg_atof_loop
 set push, c
 set push, j
-jsr uint16_to_reg ; load current char to register
-
+jsr uint16_to_reg
 set push, i
 set push, j
-jsr reg_add ; add current char to target register
-
+jsr reg_add
 add [z-1], 1
-
 set pc, reg_atof_loop
-
 :reg_atof_significant_full
 add [z-2], 1
 set pc, reg_atof_loop
-
 :reg_atof_exponent_number
-set a, 128 ; set state
-
+set a, 128
 mul [z-3], 10
 ifg [z-3], 100
 set pc, nc_inf2ireg_postamble2
 add [z-3], c
 set pc, reg_atof_loop
-
 :reg_atof_minus
 ifb a, 1
 set pc, reg_atof_mantissa_minus
@@ -1192,7 +801,6 @@ ifb a, 32
 set pc, reg_atof_exponent_minus
 set pc, reg_atof_end
 :reg_atof_mantissa_minus
-; handle leading minus
 set a, 2
 set [z-4], 0x8000
 set pc, reg_atof_loop
@@ -1200,7 +808,6 @@ set pc, reg_atof_loop
 set a, 64
 set [z-5], 0x8000
 set pc, reg_atof_loop
-
 :reg_atof_plus
 ifb a, 1
 set pc, reg_atof_mantissa_plus
@@ -1213,7 +820,6 @@ set pc, reg_atof_loop
 :reg_atof_exponent_plus
 set a, 64
 set pc, reg_atof_loop
-
 :reg_atof_decimal_point
 ifb a, 7
 set pc, reg_atof_decimal_point_mantissa
@@ -1221,7 +827,6 @@ set pc, reg_atof_end
 :reg_atof_decimal_point_mantissa
 set a, 8
 set pc, reg_atof_loop
-
 :reg_atof_exponent
 ifb a, 23
 set pc, reg_atof_exponent_ok
@@ -1229,307 +834,199 @@ set pc, reg_atof_end
 :reg_atof_exponent_ok
 set a, 32
 set pc, reg_atof_loop
-
 :reg_atof_end
 ifc a, 1
 set pc, reg_atof_end_inf
-
-set push, [z-11] ; str
-set push, s_nan ; "NaN"
-set push, 1 ; ignore case
-set push, 3 ; max 3 characters
-
+set push, [z-11]
+set push, s_nan
+set push, 1
+set push, 3
 jsr strcmp
 ifn x, 0
 set pc, reg_atof_end_inf
-
-jsr nc_nan2ireg ; return NaN
-set x, 3 ; 3 characters consumed
+jsr nc_nan2ireg
+set x, 3
 jsr nc_postamble
-
 :reg_atof_end_inf
-ifc a, 3 ; not start or mantissa sign
+ifc a, 3
 set pc, reg_atof_end_normal
-
-set push, [z-11] ; str
-set push, s_inf ; "Inf"
-set push, 1 ; ignore case
-set push, 3 ; max 3 characters
-
+set push, [z-11]
+set push, s_inf
+set push, 1
+set push, 3
 jsr strcmp
 ifn x, 0
 set pc, reg_atof_end_zero
-
 set j, CONST_INF
 set pc, reg_atof_end_const
-
 :reg_atof_end_zero
-set push, [z-11] ; str
-set push, s_zero ; "0.0"
-set push, 1 ; ignore case
-set push, 3 ; max 3 characters
-
+set push, [z-11]
+set push, s_zero
+set push, 1
+set push, 3
 jsr strcmp
 ifn x, 0
 set pc, reg_atof_end_normal
-
 set j, CONST_ZERO
-
 :reg_atof_end_const
 jsr nc_jreg2ireg_no_sign
 set [SIGN+i], [z-4]
-
-set x, 3 ; "Inf" and "0.0" both len=3
+set x, 3
 ife a, 2
-add x, 1 ; add one for sign
-
+add x, 1
 jsr nc_postamble
-
 :reg_atof_end_normal
-ifc a, 107 ; state machine not in valid end state
+ifc a, 107
 set pc, reg_atof_end_normal_valid
-
-jsr nc_nan2ireg ; could not parse a number
+jsr nc_nan2ireg
 set x, 0
 jsr nc_postamble
-
 :reg_atof_end_normal_valid
 set [SIGN+i], [z-4]
 ifn [MASK+i], MASK_NORMAL
 jsr nc_postamble
-
 ifn [z-5], 0x8000
 set pc, reg_atof_end_adjust_exp
-
 xor [z-3], 0xffff
 add [z-3], 1
 set pc, reg_atof_end_adjust_exp
-
 :reg_atof_end_adjust_exp
 add [z-3], [z-2]
-
 :reg_atof_end_exp_loop
 ife [z-3], 0
 jsr nc_postamble
 ifg 0x8000, [z-3]
 set pc, reg_atof_end_mult
-
 set push, i
 set push, CONST_10F
 jsr reg_div
-
 add [z-3], 1
 set pc, reg_atof_end_exp_loop
-
 :reg_atof_end_mult
 set push, i
 set push, CONST_10F
 jsr reg_mul
-
 sub [z-3], 1
 set pc, reg_atof_end_exp_loop
-
-;----------------------------------------------------------------
-; extern uint16 *ftoa_reg(struct float_reg *reg, uint16 *buf)
-; local variable space
-; [ -5] struct float_register
-; [-10] struct float_register
-;----------------------------------------------------------------
 :reg_ftoa
-set push, 2 ; number of arguments
-set push, 10 ; amount of local variable space
+set push, 2
+set push, 10
 jsr nc_preamble
-
 :reg_ftoa_begin
-set j, [z+12] ; reg
+set j, [z+12]
 set i, z
 sub i, 5
 jsr nc_jreg2ireg
-
-set j, [z+11] ; buf
-
+set j, [z+11]
 ifn [MASK+i], MASK_NAN
 set pc, ftoa_check_inf
 set x, s_nan
         set pc, ftoa_copy_and_return
-
 :ftoa_check_inf
 ifn [MASK+i], MASK_INF
 set pc, ftoa_check_zero
 set x, s_ninf
 set pc, ftoa_check_sign
-
 :ftoa_check_zero
 ifn [MASK+i], MASK_ZERO
 set pc, ftoa_convert
 set x, s_nzero
 set pc, ftoa_check_sign
-
 :ftoa_check_sign
 ife [SIGN+i], 0
 add x, 1
-
 :ftoa_copy_and_return
-    ife [x], 0
-        set pc, ftoa_finish
-    set [j], [x]
-    add j, 1
-    add x, 1
-    set pc, ftoa_copy_and_return
-    
+ife [x], 0
+set pc, ftoa_finish
+set [j], [x]
+add j, 1
+add x, 1
+set pc, ftoa_copy_and_return
 :ftoa_convert
-; i: local float register
-; j: buffer
-    
-set a, 1 ; a: magnitude
-set b, 0 ; b: significants
-
+set a, 1
+set b, 0
 ife [SIGN+i], 0
 set pc, ftoa_scale
-
 set [j], '-'
 add j, 1
-
 set [i+SIGN], 0
-
 :ftoa_scale
 set push, i
 set push, CONST_10F
 jsr reg_cmp
-
 ife x, -1
 set pc, ftoa_print
-
 set push, i
 set push, CONST_10F
 jsr reg_div
-
 add a, 1
 set pc, ftoa_scale
-
 :ftoa_print
 set push, i
 jsr reg_to_uint16
-
 set push, x
 set c, x
-
 add x, '0'
 set [j], x
 add j, 1
-
 set push, z
 sub peek, 10
 jsr uint16_to_reg
-
 set push, i
 set push, z
 sub peek, 10
 jsr reg_sub
-
 ife [MASK+i], MASK_ZERO
 set pc, ftoa_fill_with_zero
-
 bor c, b
 ife c, 0
 set pc, ftoa_scale_up
-
 add b, 1
 ife b, 9
 set pc, ftoa_fill_with_zero
-
 :ftoa_scale_up
 set push, i
 set push, CONST_10F
 jsr reg_mul
-
 sub a, 1
 ifn a, 0
 set pc, ftoa_print
-
 set [j], '.'
 add j, 1
-
 set pc, ftoa_print
-
 :ftoa_fill_with_zero
 sub a, 1
 ife a, 0
 set pc, ftoa_finish
 ifb a, 0x8000
 set pc, ftoa_finish
-
 set [j], '0'
 add j, 1
-
 set pc, ftoa_fill_with_zero
-
 :ftoa_finish
 set [j], 0
-set x, [z+11] ; buf
-
-sub j, x ; end - start
-set x, j ; return value to x
-
+set x, [z+11]
+sub j, x
+set x, j
 jsr nc_postamble
-
-
-
-;----------------------------------------------------------------
-; utility subroutines to handle function setup and cleanup
-;----------------------------------------------------------------
-
-; postamble - function can call this subroutine to cleanup stack, restore
-; registers and return from subroutine
-; x: return value
 :nc_postamble
-set sp, z ; free local vars
-set z, pop ; restore fp
-
-set y, pop ; restore registers
+set sp, z
+set z, pop
+set y, pop
 set j, pop
 set i, pop
 set c, pop
 set b, pop
 set a, pop
-
-add sp, 2 ; pop preamble return address and sizeof local vars
-
-add [sp], sp ; calculate ptr to 1st arg
-add [sp], 1 ; sp + num args + 1
-
-; no good... but i couldn't figure out better way to do this
-set push, z ; store fp to free a register for processing
-set z, [sp+1] ; peek ptr to 1st arg
-set [z], [sp+2] ; overwrite 1st arg with original return address
-set z, pop ; pop fp
-set sp, [sp] ; clear stack except for the return address
-; ---
-
-set pc, pop ; rts
-
-; preamble - function can call this subroutine before doing ANYTHING else
-; than pushing sizeof (args) and sizeof(local vars) to stack
-; Stack after preamble
-; [preamble]
-; [sp+ 0] local variable (<-sp)
-; [sp+ 1] local variable
-; [sp+ 2] local variable
-; [sp+ 3] FP (<-z)
-; [sp+ 4] y
-; [sp+ 5] j
-; [sp+ 6] i
-; [sp+ 7] c
-; [sp+ 8] b
-; [sp+ 9] a
-; [callee]
-; [sp+10] RTS (to callee func)
-; [sp+11] sizeof(locals) (e.g. 3)
-; [sp+12] sizeof(args) (e.g. 2)
-; [caller]
-; [sp+13] RTS (to caller func)
-; [sp+14] arg2 (rightmost)
-; [sp+15] arg1 (leftmost)
+add sp, 2
+add [sp], sp
+add [sp], 1
+set push, z
+set z, [sp+1]
+set [z], [sp+2]
+set z, pop
+set sp, [sp]
+set pc, pop
 :nc_preamble
 set push, a
 set push, b
@@ -1537,69 +1034,41 @@ set push, c
 set push, i
 set push, j
 set push, y
-
-set push, z ; old fp
-set z, sp ; new fp
-
-sub sp, [z + 8] ; reserve space for local variables
-
-set pc, [z + 7] ; rts
-     
-;----------------------------------------------------------------
-; uint16 strcmp(
-; uint16 *str1,
-; uint16 *str2,
-; uint16 ignore_case,
-; uint16 num_chars)
-;----------------------------------------------------------------
+set push, z
+set z, sp
+sub sp, [z + 8]
+set pc, [z + 7]
 :strcmp
-set push, 4 ; sizeof(args)
-set push, 0 ; sizeof(local vars)
+set push, 4
+set push, 0
 jsr nc_preamble
-
-set i, [z + 14] ; read str1
-set j, [z + 13] ; read str2
-set c, [z + 12] ; read ignore_case
-set y, [z + 11] ; read num_chars
-
+set i, [z + 14]
+set j, [z + 13]
+set c, [z + 12]
+set y, [z + 11]
 :strcmp_loop
-set a, [i] ; read char from str1
-sti b, [j] ; read char from str2 and increment ptrs'
-
-ife a, 0 ; if end of str1
+set a, [i]
+sti b, [j]
+ife a, 0
 set pc, strcmp_finish
-
-ife y, 0 ; if n-characters already compared
+ife y, 0
 set pc, strcmp_finish
-sub y, 1 ; subtract character count
-
-ife c, 0 ; if ignore case, jmp to check
+sub y, 1
+ife c, 0
 set pc, strcmp_loop_check
-
-ifg a, 'A'-1 ; a = toLower(a)
+ifg a, 'A'-1
 ifl a, 'Z'+1
 add a, 'a' - 'A'
-
-ifg b, 'A'-1 ; b = toLower(b)
+ifg b, 'A'-1
 ifl b, 'Z'+1
 add b, 'a' - 'A'
-
-;ifg a, 'Z' ; if a is upper, convert to lower
-; set pc, strcmp_loop_to_lower_b
-;ifg 'A', a
-; set pc, strcmp_loop_to_lower_b
-;
-;add a, 'a' - 'A'
-
 :strcmp_loop_check
 ife a, b
 set pc, strcmp_loop
-
 :strcmp_finish
 set x, 0
 ifl a, b
 set x, -1
 ifg a, b
 set x, 1
-
 jsr nc_postamble
