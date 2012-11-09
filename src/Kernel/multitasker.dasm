@@ -164,3 +164,25 @@ SET PC, POP
 :multitasker_Progs_13 dat 0,0,0,0,0,0,0,0,0,0,0
 :multitasker_Progs_14 dat 0,0,0,0,0,0,0,0,0,0,0
 :multitasker_Progs_15 dat 0,0,0,0,0,0,0,0,0,0,0
+
+; EVERYTHING BELOW WILL BE INIT STUFF!
+
+:pm_init
+:multitasker_Init_Loop
+HWQ J
+IFE B, 0x12d0
+IFE A, 0xb402
+JSR multitasker_Init_Clock
+ADD J, 1
+SET PC, multitasker_Init_Loop
+SET PC, POP
+:multitasker_Init_Clock
+SET A, J
+JSR Clock_SetID
+SET A, 12
+JSR Clock_SetTicksec
+SET A, multitasker_Interrupt
+SET [current_process], 0
+JSR fn_request_handler_k
+JSR Clock_SetIntMsg
+SET PC, POP

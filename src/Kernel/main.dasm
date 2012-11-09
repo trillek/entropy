@@ -1,6 +1,6 @@
 JSR fn_init_MM
 JSR fn_init_IM
-JSR multitasker_Init
+JSR pm_init
 #include "mem_manager.dasm"
 #include "multitasker.dasm"
 #include "int_manager.dasm"
